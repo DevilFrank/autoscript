@@ -23,16 +23,12 @@ function randomPos(dom, type) {
       let pos = dom.getBoundingClientRect()
       var y = (pos.top + dom.offsetHeight*0.4 + document.documentElement.scrollTop + Math.random() * dom.offsetHeight*0.2)
       var x = (pos.left + dom.offsetWidth*0.3 + Math.random() * dom.offsetWidth*0.4);
-        document.querySelector('div#relatedsearches1').style.height = '323px'
-        document.querySelector('div#relatedsearches1').style.overflow = 'hidden'
-        document.querySelector('iframe#master-1').style.transform = 'scale(54)'
       JSBehavior.jsResult('4', x + ',' + y)
       return
     }
     let pos = dom.getBoundingClientRect()
     var y = (pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2))
     var x = (pos.left + pos.width*0.1 + Math.random() * (pos.width - pos.width * 0.2));
-     
     JSBehavior.jsResult('4', x + ',' + y)
 }
 function randomItem(list, fn) {
