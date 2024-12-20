@@ -41,4 +41,4 @@ function randomItem(list, fn) {
     return _n[Math.floor(Math.random() * _n.length)]
 }
   
-q('div#shop-box a',true).pos(true)
+q('a.container',true).pos(true)
