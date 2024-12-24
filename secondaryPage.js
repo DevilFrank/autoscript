@@ -41,4 +41,4 @@ function randomItem(list, fn) {
     return _n[Math.floor(Math.random() * _n.length)]
 }
   
-q('a.container',true).pos(true)
+q('div.gs-webResult.gs-result a',true).pos(true)

@@ -61,4 +61,4 @@ function randomItem(list, fn) {
     return _n[Math.floor(Math.random() * _n.length)]
 }
    
-q("iframe[id*='master-a-']",true).pos(true)
+q("iframe[id*='master-']",true).pos(true)

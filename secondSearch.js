@@ -13,7 +13,7 @@ try{
 }
 function judgeInputDom(){
   let inputArr=[
-    document.querySelector('input#search_input_in')
+    document.querySelector('input#gsc-i-id1')
   ].filter(item=>{
     if(item!=null)return item
   });
@@ -22,7 +22,7 @@ function judgeInputDom(){
 }
 function judgeBut(){
   let butArr=[
-    document.querySelector('div.search_input div'),
+    document.querySelector('button.gsc-search-button.gsc-search-button-v2'),
   ].filter(item=>{
     if(item!=null)return item
   });
