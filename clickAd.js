@@ -1,3 +1,5 @@
+var count = 0;
+var tagName = `iframe[id*='master-']`
 function q(tag, type) {
   let res = null
   if(type && type == 'only') {
@@ -5,6 +7,7 @@ function q(tag, type) {
   } else {
     res = type ? Array.prototype.slice.call(document.querySelectorAll(tag)) : document.querySelector(tag)
   }
+  ++count;
   return {pos:(type,t) => {
       if(Array.isArray(res)) {
           randomPos(randomItem(res), type,t)
@@ -16,9 +19,15 @@ function q(tag, type) {
    
 function randomPos(dom, type, t) {
     if (!dom) {
+      if(count > 3){
+        count = 0;
         JSBehavior.jsResult('1', '')
-      console.log(0)
-        return
+      }else{
+        setTimeout(()=>{
+          q(tagName,true).pos(true)
+        },3000)
+      }
+      return
     }
     const rect = dom.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) {
@@ -61,4 +70,4 @@ function randomItem(list, fn) {
     return _n[Math.floor(Math.random() * _n.length)]
 }
    
-q("iframe[id*='master-']",true).pos(true)
+q(tagName,true).pos(true)

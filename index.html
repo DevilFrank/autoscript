@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <style>
+    html,body{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    a {
+      text-decoration: none; /* 去掉下划线 */
+      color: inherit; /* 继承父元素的颜色 */
+      background: none; /* 去掉背景 */
+      border: none; /* 去掉边框 */
+      padding: 0; /* 去掉内边距 */
+      margin: 0; /* 去掉外边距 */
+      font: inherit; /* 继承字体样式 */
+      cursor: auto; /* 设置光标为默认 */
+    }
+    p{
+      padding:0;
+      margin: 0;
+    }
+    .content{
+      width: 15rem;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .item{
+      width: 100%;
+    }
+    .item a{
+      display: flex;
+      flex-direction: column;
+    }
+    .item a p{
+      width: 100%;
+      color: #333;
+      font-size: 0.5rem;
+      padding: 0 .1rem;
+    }
+    .item a .item-title{
+      font-size: 1rem;
+      line-height: 1.6rem;
+      color: #000;
+    }
+    .item a img{
+      width: 100%;
+    }
+    footer{
+      width: 100%;
+      padding: .2rem 0;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.4rem;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+    }
+    footer p{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: .1rem;
+    }
+    footer p a{
+      color: #333;
+      line-height: 0.3rem;
+      padding: 0 .2rem;
+      border-right: 1px solid #333;
+    }
+    footer p a:last-child{
+      border: none;
+    }
+  </style>
+  <script>
+    (function(){function setRem() {var screenWidth = window.innerWidth;var remSize = screenWidth / 15;document.documentElement.style.fontSize = remSize + 'px';}setRem();window.addEventListener('resize', setRem);})();
+  </script>
+  <title></title>
+</head>
+<body>
+  <ul id="content" class="content"></ul>
+  <footer>
+    <p>Copyrights @ 2024 All Rights Reserved.</p>
+    <p>
+      <a href="https://searchafind.com/policy?c=8140334225">Privacy Policy</a>
+      <a href="https://searchafind.com/terms?c=8140334225">terms</a>
+      <a href="https://searchafind.com/contact?c=8140334225">contact us</a>
+    </p>
+  </footer>
+  <script>
+    const ipArr = ['173.3.70.7','207.177.78.86','23.152.104.130','172.58.57.154','65.111.13.207','75.31.22.170','172.58.182.190','73.96.195.192','45.21.236.237','136.50.129.37']
+    const uaArr = [
+      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.81 Mobile Safari/537.36',
+      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.58 Mobile Safari/537.36',
+      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.58 Mobile Safari/537.36',
+      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.40 Mobile Safari/537.36',
+      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.40 Mobile Safari/537.36'
+    ]
+    var xhr = new XMLHttpRequest();
+    var userIp = ipArr[Math.floor(Math.random()*ipArr.length)];
+    var userAgent = uaArr[Math.floor(Math.random()*uaArr.length)];
+    var url = `https://api.mobitech-content.xyz/v1.1/GA200923JS/document/get?type=promoted&layout_type=2&limit=7&user_ip=${encodeURIComponent(userIp)}&ua=${encodeURIComponent(userAgent)}`;
+
+    xhr.open('GET', url, true);
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                console.log(response);
+                // 获取用于渲染数据的容器
+                 var contentUl = document.getElementById('content');
+                // 使用 forEach 遍历数据数组并渲染到页面
+                response.forEach(function(item) {
+                    // 创建一个新的 li 元素
+                    var itemLi = document.createElement('li');
+                    itemLi.className = 'item'; // 添加类名以便于样式设置
+
+                    // 创建内容
+                    itemLi.innerHTML = `
+                        <a href="${item.click_url}" target="_blank">
+                          <img src="${item.icon_url}" alt="">
+                          <p class="item-title">${item.title}</p>
+                          <p>${item.text}</p>
+                        </a>
+                    `;
+
+                    // 将新创建的 li 添加到内容容器中
+                    contentUl.appendChild(itemLi);
+                });
+            } else {
+                console.error('请求失败，状态码：', xhr.status);
+            }
+        }
+    };
+
+    xhr.send();
+
+  </script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+var count = 0;
+var tagName = `ul#keywordList li a`
 function q(tag, type) {
   let res = null
   if(type && type == 'only') {
@@ -5,6 +7,7 @@ function q(tag, type) {
   } else {
     res = type ? Array.prototype.slice.call(document.querySelectorAll(tag)) : document.querySelector(tag)
   }
+  ++count;
   return {pos:(type) => {
       if(Array.isArray(res)) {
           randomPos(randomItem(res), type)
@@ -16,7 +19,14 @@ function q(tag, type) {
  
 function randomPos(dom, type) {
     if (!dom) {
+      if(count > 3){
+        count = 0;
         JSBehavior.jsResult('4', '')
+      }else{
+        setTimeout(()=>{
+          q(tagName,true).pos(true)
+        },3000)
+      }
         return
     }
     if(type) {
@@ -40,4 +50,4 @@ function randomItem(list, fn) {
     return _n[Math.floor(Math.random() * _n.length)]
 }
  
-q('ul#keywordList li a',true).pos(true)
+q(tagName,true).pos(true)
