@@ -1,5 +1,5 @@
 var count = 0;
-var tagName = `div.ads iframe`
+var tagName = `div.ad-creative.rssAttrContainer a`
 function q(tag, type) {
   let res = null
   if(type && type == 'only') {

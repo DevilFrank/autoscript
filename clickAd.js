@@ -1,5 +1,5 @@
 var count = 0;
-var tagName = `iframe[id*='master-']`
+var tagName = `div.ad-container a`
 function q(tag, type) {
   let res = null
   if(type && type == 'only') {
