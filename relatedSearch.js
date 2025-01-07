@@ -1,5 +1,5 @@
 var count = 0;
-var tagName = `ul#keywordList li a`
+var tagName = `div.ads iframe`
 function q(tag, type) {
   let res = null
   if(type && type == 'only') {
