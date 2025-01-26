@@ -41,4 +41,4 @@ function randomItem(list, fn) {
     return _n[Math.floor(Math.random() * _n.length)]
 }
   
-q('footer a',true).pos(true)
+q('a.gs-title',true).pos(true)
