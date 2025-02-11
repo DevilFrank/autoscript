@@ -1,5 +1,5 @@
 var count = 0;
-var tagName = `div[class^="_responseList_"][data-tn-serp-page-related-search-bubbles="true"] a`
+var tagName = `a[href*="/search?"]`
 function q(tag, type) {
   let res = null
   if(type && type == 'only') {

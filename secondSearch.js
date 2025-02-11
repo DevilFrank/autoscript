@@ -13,7 +13,7 @@ try{
 }
 function judgeInputDom(){
   let inputArr=[
-    document.querySelector('textarea#SearchInputId')
+    document.querySelector('input#gsc-i-id1'),
   ].filter(item=>{
     if(item!=null)return item
   });

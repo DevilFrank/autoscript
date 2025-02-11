@@ -41,4 +41,4 @@ function randomItem(list, fn) {
     return _n[Math.floor(Math.random() * _n.length)]
 }
   
-q('a.gs-title',true).pos(true)
+q('li.list-inline-item a',true).pos(true)
