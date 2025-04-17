@@ -1,1 +1,110 @@
 dmFyIGNvdW50ID0gMDsKdmFyIHRhZ05hbWUgPSBgaWZyYW1lW2lkXj0ibWFzdGVyLSJdYDsKCmZ1bmN0aW9uIHEodGFnLCB0eXBlKSB7CiAgbGV0IHJlcyA9IG51bGwKICBpZih0eXBlICYmIHR5cGUgPT0gJ29ubHknKSB7CiAgICByZXMgPSByYW5kb21JdGVtKEFycmF5LnByb3RvdHlwZS5zbGljZS5jYWxsKGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwodGFnKSkpCiAgfSBlbHNlIHsKICAgIHJlcyA9IHR5cGUgPyBBcnJheS5wcm90b3R5cGUuc2xpY2UuY2FsbChkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKHRhZykpIDogZG9jdW1lbnQucXVlcnlTZWxlY3Rvcih0YWcpCiAgfQogICsrY291bnQ7CiAgcmV0dXJuIHtwb3M6KHR5cGUsdCkgPT4gewogICAgICBpZihBcnJheS5pc0FycmF5KHJlcykpIHsKICAgICAgICAgIHJhbmRvbVBvcyhyYW5kb21JdGVtKHJlcyksIHR5cGUsdCkKICAgICAgfSBlbHNlIHsKICAgICAgcmFuZG9tUG9zKHJlcywgdHlwZSx0KQogICAgICB9CiAgfX0KfQoKZnVuY3Rpb24gY3JlYXRlTWFya2VyKHgsIHkpIHsKICAvLyDnp7vpmaTml6fmoIforrAKICBjb25zdCBleGlzdGluZ01hcmtlcnMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcuY29vcmQtbWFya2VyJyk7CiAgZXhpc3RpbmdNYXJrZXJzLmZvckVhY2gobWFya2VyID0+IG1hcmtlci5yZW1vdmUoKSk7CgogIC8vIOWIm+W7uuaWsOagh+iusAogIGNvbnN0IG1hcmtlciA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpOwogIG1hcmtlci5jbGFzc05hbWUgPSAnY29vcmQtbWFya2VyJzsKICBtYXJrZXIuc3R5bGUuY3NzVGV4dCA9IGAKICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTsKICAgIHdpZHRoOiA0MHB4OwogICAgaGVpZ2h0OiAyNXB4OwogICAgYmFja2dyb3VuZDogcmdiYSgyNTUsIDAsIDAsIDAuMyk7CiAgICBwb2ludGVyLWV2ZW50czogbm9uZTsKICAgIHotaW5kZXg6IDk5OTk5OTsKICAgIHRyYW5zZm9ybTogdHJhbnNsYXRlKC0xMDAlLCAtMTAwJSk7CiAgICBsZWZ0OiAke3h9cHg7CiAgICB0b3A6ICR7eX1weDsKICAgIGJvcmRlci1yYWRpdXM6IDNweDsKICAgIGJvcmRlcjogMXB4IHNvbGlkIHJnYmEoMjU1LCAwLCAwLCAwLjUpOwogIGA7CiAgZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChtYXJrZXIpOwp9CgpmdW5jdGlvbiByYW5kb21Qb3MoZG9tLCB0eXBlLCB0KSB7CiAgaWYgKCFkb20pIHsKICAgIGlmKGNvdW50ID4gMyl7CiAgICAgIGNvdW50ID0gMDsKICAgICAgSlNCZWhhdmlvci5qc1Jlc3VsdCgnMScsICcnKQogICAgfWVsc2V7CiAgICAgIHNldFRpbWVvdXQoKCk9PnsKICAgICAgICBxKHRhZ05hbWUsdHJ1ZSkucG9zKHRydWUpCiAgICAgIH0sMzAwMCkKICAgIH0KICAgIHJldHVybgogIH0KICAKICBjb25zdCByZWN0ID0gZG9tLmdldEJvdW5kaW5nQ2xpZW50UmVjdCgpOwogIGlmIChyZWN0LndpZHRoID09PSAwIHx8IHJlY3QuaGVpZ2h0ID09PSAwKSB7CiAgICBKU0JlaGF2aW9yLmpzUmVzdWx0KCcxJywgJycpCiAgICBjb25zb2xlLmxvZygxLHJlY3QpCiAgICByZXR1cm47CiAgfQoKICBpZiAodCkgewogICAgbGV0IGwgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdkaXYnKTsKICAgIGwuc3R5bGUud2lkdGggPSAnMTAwcHgnOwogICAgbC5zdHlsZS5oZWlnaHQgPSAnMTAwcHgnOwogICAgbC5zdHlsZS5wb3NpdGlvbiA9ICdhYnNvbHV0ZSc7CiAgICBsLnN0eWxlLnRvcCA9ICcwJzsKICAgIGwuc3R5bGUubGVmdCA9ICcwJzsKICAgIGwuY2xhc3NOYW1lID0gJ2hhb2RvdXlhMTIzNCc7CiAgICBkb2N1bWVudC5kb2N1bWVudEVsZW1lbnQuYXBwZW5kQ2hpbGQobCkKICAgIGRvbSA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJy5oYW9kb3V5YTEyMzQnKQogIH0KCiAgbGV0IHBvcyA9IGRvbS5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKQogIGxldCB4LCB5OwoKICBpZih0eXBlKSB7CiAgICB4ID0gcG9zLmxlZnQgKyBNYXRoLmZsb29yKE1hdGgucmFuZG9tKCkgKiAocG9zLndpZHRoIC0gNDApKSArIDIwOwogICAgeSA9IHBvcy50b3AgKyBkb2N1bWVudC5kb2N1bWVudEVsZW1lbnQuc2Nyb2xsVG9wICsgTWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogKDM2IC0gMTEgKyAxKSkgKyAxMTsKICAgIGNyZWF0ZU1hcmtlcih4LCB5KTsgIC8vIOa3u+WKoOagh+iusAogICAgY29uc29sZS5sb2coMix4LHkpCiAgICBKU0JlaGF2aW9yLmpzUmVzdWx0KCcxJywgeCArICcsJyArIHkpCiAgICByZXR1cm4KICB9CgogIHggPSBwb3MubGVmdCArIE1hdGguZmxvb3IoTWF0aC5yYW5kb20oKSAqIChwb3Mud2lkdGggLSA0MCkpICsgMjA7CiAgeSA9IHBvcy50b3AgKyBkb2N1bWVudC5kb2N1bWVudEVsZW1lbnQuc2Nyb2xsVG9wICsgTWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogKDM2IC0gMTEgKyAxKSkgKyAxMTsKICBjcmVhdGVNYXJrZXIoeCwgeSk7ICAvLyDmt7vliqDmoIforrAKICBjb25zb2xlLmxvZygzLHgseSkKCiAgSlNCZWhhdmlvci5qc1Jlc3VsdCgnMScsIHggKyAnLCcgKyB5KQp9CgpmdW5jdGlvbiByYW5kb21JdGVtKGxpc3QsIGZuKSB7CiAgICBsZXQgX2ZuID0gZm4gfHwgZnVuY3Rpb24oaSl7cmV0dXJuIGl9CiAgICBsZXQgX24gPSBsaXN0LmZpbHRlcihpPT57CiAgICAgICAgaWYgKGkub2Zmc2V0V2lkdGggPiAwICYmIGkub2Zmc2V0SGVpZ2h0ID4gMCkKICAgICAgICAgICAgcmV0dXJuIGkKICAgIH0pLmZpbHRlcihfZm4pCiAgICByZXR1cm4gX25bTWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogX24ubGVuZ3RoKV0KfQoKcSh0YWdOYW1lLHRydWUpLnBvcyh0cnVlKQ==
+
+
+
+var count = 0;
+var tagName = `iframe[id^="master-"]`;
+
+function q(tag, type) {
+  let res = null
+  if(type && type == 'only') {
+    res = randomItem(Array.prototype.slice.call(document.querySelectorAll(tag)))
+  } else {
+    res = type ? Array.prototype.slice.call(document.querySelectorAll(tag)) : document.querySelector(tag)
+  }
+  ++count;
+  return {pos:(type,t) => {
+      if(Array.isArray(res)) {
+          randomPos(randomItem(res), type,t)
+      } else {
+      randomPos(res, type,t)
+      }
+  }}
+}
+
+function createMarker(x, y) {
+  // 移除旧标记
+  const existingMarkers = document.querySelectorAll('.coord-marker');
+  existingMarkers.forEach(marker => marker.remove());
+
+  // 创建新标记
+  const marker = document.createElement('div');
+  marker.className = 'coord-marker';
+  marker.style.cssText = `
+    position: absolute;
+    width: 40px;
+    height: 25px;
+    background: rgba(255, 0, 0, 0.3);
+    pointer-events: none;
+    z-index: 999999;
+    transform: translate(-100%, -100%);
+    left: ${x}px;
+    top: ${y}px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 0, 0, 0.5);
+  `;
+  document.body.appendChild(marker);
+}
+
+function randomPos(dom, type, t) {
+  if (!dom) {
+    if(count > 3){
+      count = 0;
+      JSBehavior.jsResult('1', '')
+    }else{
+      setTimeout(()=>{
+        q(tagName,true).pos(true)
+      },3000)
+    }
+    return
+  }
+  
+  const rect = dom.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) {
+    JSBehavior.jsResult('1', '')
+    console.log(1,rect)
+    return;
+  }
+
+  if (t) {
+    let l = document.createElement('div');
+    l.style.width = '100px';
+    l.style.height = '100px';
+    l.style.position = 'absolute';
+    l.style.top = '0';
+    l.style.left = '0';
+    l.className = 'haodouya1234';
+    document.documentElement.appendChild(l)
+    dom = document.querySelector('.haodouya1234')
+  }
+
+  let pos = dom.getBoundingClientRect()
+  let x, y;
+
+  if(type) {
+    x = pos.left + Math.floor(Math.random() * (pos.width - 40)) + 20;
+    y = pos.top + document.documentElement.scrollTop + Math.floor(Math.random() * (36 - 11 + 1)) + 11;
+    createMarker(x, y);  // 添加标记
+    console.log(2,x,y)
+    JSBehavior.jsResult('1', x + ',' + y)
+    return
+  }
+
+  x = pos.left + Math.floor(Math.random() * (pos.width - 40)) + 20;
+  y = pos.top + document.documentElement.scrollTop + Math.floor(Math.random() * (36 - 11 + 1)) + 11;
+  createMarker(x, y);  // 添加标记
+  console.log(3,x,y)
+
+  JSBehavior.jsResult('1', x + ',' + y)
+}
+
+function randomItem(list, fn) {
+    let _fn = fn || function(i){return i}
+    let _n = list.filter(i=>{
+        if (i.offsetWidth > 0 && i.offsetHeight > 0)
+            return i
+    }).filter(_fn)
+    return _n[Math.floor(Math.random() * _n.length)]
+}
+
+q(tagName,true).pos(true)
