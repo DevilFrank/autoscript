@@ -1,150 +1,219 @@
-var keyWord = {sk};
-var type = '${searchButton}';//`${searchInput}`-执行返回type5 输入框的坐标；`${searchButton}`-执行返回type3 搜索按钮的坐标
+var keyWord = { sk } //sk两边不能有空格，base64时注意
+var type = '${searchButton}' //`${searchInput}`-执行返回type5 输入框的坐标；`${searchButton}`-执行返回type3 搜索按钮的坐标，结束必须有分号
 
-var inputTagName = `input#info`
-var buttonTagName = `button#triggerButton`
-function judgeDom(tagName){
-  let tagArr=[
-    document.querySelector(tagName)
-  ].filter(item=>{
-    if(item!=null)return item
-  });
-  let res=tagArr.length>0?tagArr[0]:null;
-  return res
+var inputTagName = `textarea#SearchInputId`
+var buttonTagName = `div[data-tn-searchbox-dropdown="true"] div[data-tn-suggestion]`
+function judgeDom(tagName) {
+	let tagArr = [document.querySelector(tagName)].filter(item => {
+		if (item != null) return item
+	})
+	let res = tagArr.length > 0 ? tagArr[0] : null
+	return res
 }
 
-function getDomPos(dom){
-  if((!dom.offsetWidth||!dom.offsetHeight)&&dom.parentNode){
-    dom=dom.parentNode;
-    return getDomPos(dom)
-  }
-  if(dom==document){
-    return{x:0,y:0}
-  }
-  var boundRect=dom.getBoundingClientRect();
-  var x=boundRect.left+dom.offsetWidth/10+Math.floor(Math.random()*(dom.offsetWidth-dom.offsetWidth/5));
-  var y=boundRect.top+window.scrollY+dom.offsetHeight/20+Math.floor(Math.random()*(dom.offsetHeight-dom.offsetHeight/10));
-  return{x,y}
+function getDomPos(dom) {
+	if ((!dom.offsetWidth || !dom.offsetHeight) && dom.parentNode) {
+		dom = dom.parentNode
+		return getDomPos(dom)
+	}
+	if (dom == document) {
+		return { x: 0, y: 0 }
+	}
+	var boundRect = dom.getBoundingClientRect()
+	var x = boundRect.left + dom.offsetWidth / 10 + Math.floor(Math.random() * (dom.offsetWidth - dom.offsetWidth / 5))
+	var y = boundRect.top + window.scrollY + dom.offsetHeight / 20 + Math.floor(Math.random() * (dom.offsetHeight - dom.offsetHeight / 10))
+	return { x, y }
 }
 
-function inputString(target,str){
-	if (typeof str !== 'string' || str.length !== 1) {
-		throw new Error('Input must be a single character string')
+function inputString(target, str, options = {}) {
+	// 配置合并
+	const config = {
+		useComposition: true, // 启用输入法合成
+		delay: 20, // 事件间延迟
+		...options,
 	}
-	
-	// const target = document.activeElement || document.body
-	const isInput = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
-	// 获取字符的键盘布局信息
-	const { code, modifiers } = getKeyInfo(str)
-	
-	// 创建键盘事件参数
-	const baseEvent = {
-		key: str,
-		code,
-		bubbles: true,
-		cancelable: true,
-		...modifiers,
+
+	// 输入校验增强
+	if (typeof str !== 'string' || str.length === 0) {
+		throw new Error('Invalid input: must be non-empty string')
 	}
-	
-	// 事件序列
-	const events = [new KeyboardEvent('keydown', baseEvent), new KeyboardEvent('keypress', baseEvent)]
-	
-	if (isInput) {
-		// 直接更新输入值（兼容复杂字符）
-		const start = target.selectionStart
-		target.value = target.value.slice(0, start) + str + target.value.slice(target.selectionEnd)
-		target.dispatchEvent(new InputEvent('input', { bubbles: true }))
-		target.setSelectionRange(start + 1, start + 1)
+
+	// 增强元素检测
+	if (!(target instanceof HTMLElement) || typeof target.dispatchEvent !== 'function') {
+		throw new Error('Invalid target element')
 	}
-	
-	events.push(new KeyboardEvent('keyup', baseEvent))
-	
-	// 触发事件
-	events.forEach(e => target.dispatchEvent(e))
-	
-	// 获取键盘信息（扩展多语言支持）
-	function getKeyInfo(char) {
-		// 常用特殊字符映射
-		const specialKeys = {
-			à: { code: 'KeyA', shift: true, alt: true }, // 法语/意大利语
-			é: { code: 'KeyE', shift: true, alt: true }, // 法语
-			ß: { code: 'KeyS', shift: false, alt: true }, // 德语
-			ñ: { code: 'Semicolon', shift: true }, // 西班牙语
-			й: { code: 'KeyQ' }, // 俄语 QWERTY 布局
-			ё: { code: 'Backquote', shift: true }, // 俄语
+
+	// 安全过滤 (预防XSS)
+	const forbiddenChars = /[\u2028\u2029\u0000-\u001F]/
+	if (forbiddenChars.test(str)) {
+		throw new Error('Contains forbidden control characters')
+	}
+
+	// 输入法合成流程
+	const startComposition = async () => {
+		if (!config.useComposition) return
+
+		target.dispatchEvent(
+			new CompositionEvent('compositionstart', {
+				data: str,
+				bubbles: true,
+			})
+		)
+
+		await new Promise(resolve => setTimeout(resolve, config.delay))
+
+		target.dispatchEvent(
+			new CompositionEvent('compositionupdate', {
+				data: str,
+				bubbles: true,
+			})
+		)
+	}
+
+	// 核心输入逻辑
+	const inputCore = async () => {
+		const isInput = target.matches('input, textarea, [contenteditable="true"]')
+		const originalValue = isInput ? target.value : target.textContent
+
+		// 获取选区信息
+		const selection = {
+			start: target.selectionStart || 0,
+			end: target.selectionEnd || 0,
+			range: (() => {
+				if (!isInput) {
+					const sel = window.getSelection()
+					return sel.rangeCount > 0 ? sel.getRangeAt(0) : null
+				}
+				return null
+			})(),
 		}
-	
-		// 检查已知特殊字符
-		if (specialKeys[char]) {
-			const { code, shift = false, alt = false } = specialKeys[char]
-			return {
-				code,
-				modifiers: {
-					shiftKey: shift,
-					altKey: alt,
-					// 处理 AltGr 键 (Ctrl+Alt)
-					ctrlKey: alt, // 大多数系统将 AltGr 映射为 Ctrl+Alt
-				},
+
+		try {
+			// 触发 beforeinput
+			const beforeInputEvent = new InputEvent('beforeinput', {
+				inputType: 'insertText',
+				data: str,
+				bubbles: true,
+				cancelable: true,
+			})
+
+			if (!target.dispatchEvent(beforeInputEvent)) {
+				throw new Error('Input cancelled by beforeinput handler')
 			}
-		}
-	
-		// 处理普通字母
-		if (/^[a-zA-Z]$/.test(char)) {
-			const isUpper = char === char.toUpperCase()
-			return {
-				code: `Key${char.toUpperCase()}`,
-				modifiers: {
-					shiftKey: isUpper,
-					altKey: false,
-					ctrlKey: false,
-				},
+
+			// 更新内容
+			if (isInput) {
+				// 标准输入控件
+				const newValue = originalValue.slice(0, selection.start) + str + originalValue.slice(selection.end)
+				target.value = newValue
+
+				// 触发输入法事件
+				await startComposition()
+			} else if (selection.range) {
+				// 富文本编辑器
+				selection.range.deleteContents()
+				const textNode = document.createTextNode(str)
+				selection.range.insertNode(textNode)
+				selection.range.setStartAfter(textNode)
 			}
-		}
-	
-		// 处理西里尔字母（俄语基本映射）
-		if (/[\u0400-\u04FF]/.test(char)) {
-			const cyrillicMap = {
-				а: 'KeyF',
-				б: 'KeyO',
-				в: 'KeyD', // 基于 JCUKEN 布局
-				// 可根据需要扩展更多映射
+
+			// 触发键盘事件序列
+			const keyEvents = [
+				['keydown', { code: 'Process' }], // IME 处理标记
+				['keypress', { code: 'Enter' }], // 模拟确认输入
+				['keyup', { code: 'Process' }],
+			]
+
+			for (const [type, props] of keyEvents) {
+				target.dispatchEvent(
+					new KeyboardEvent(type, {
+						key: str,
+						...props,
+						bubbles: true,
+						cancelable: true,
+					})
+				)
+				await new Promise(resolve => setTimeout(resolve, config.delay))
 			}
-			return {
-				code: cyrillicMap[char.toLowerCase()] || 'KeyA',
-				modifiers: {
-					shiftKey: char === char.toUpperCase(),
-					altKey: false,
-					ctrlKey: false,
-				},
+
+			// 触发输入法结束
+			if (config.useComposition) {
+				target.dispatchEvent(
+					new CompositionEvent('compositionend', {
+						data: str,
+						bubbles: true,
+					})
+				)
 			}
-		}
-	
-		// 默认处理（可能需要调整）
-		return {
-			code: 'Unidentified',
-			modifiers: {
-				shiftKey: false,
-				altKey: false,
-				ctrlKey: false,
-			},
+
+			// 触发 input/change 事件
+			const inputEvent = new InputEvent('input', {
+				data: str,
+				bubbles: true,
+				inputType: 'insertText',
+			})
+			target.dispatchEvent(inputEvent)
+
+			const changeEvent = new Event('change', { bubbles: true })
+			target.dispatchEvent(changeEvent)
+
+			// 更新选区
+			if (isInput) {
+				const newPos = selection.start + str.length
+				target.setSelectionRange(newPos, newPos)
+			} else if (selection.range) {
+				const sel = window.getSelection()
+				sel.removeAllRanges()
+				sel.addRange(selection.range)
+			}
+		} catch (error) {
+			console.error('Input simulation failed:', error)
+			if (isInput) target.value = originalValue
+			throw error
 		}
 	}
+
+	// 执行输入流程
+	return inputCore()
 }
-async function start(){
-	let inputDom = judgeDom(inputTagName);
-	let btnDom = judgeDom(buttonTagName);
-	if(type === '${searchButton}'){
+
+// 扩展键盘布局支持
+const KEY_LAYOUTS = {
+	'en-US': {
+		é: { code: 'KeyE', altKey: true, shiftKey: true },
+		ñ: { code: 'Semicolon', shiftKey: true },
+		ß: { code: 'KeyS', altKey: true },
+	},
+	'ru-RU': {
+		й: { code: 'KeyQ', altKey: false },
+		ц: { code: 'KeyW', altKey: false },
+	},
+}
+
+// 使用示例
+const textarea = document.querySelector('#SearchInputId')
+inputString(textarea, 'é', {
+	useComposition: true,
+	delay: 30,
+})
+	.then(() => console.log('Input successful'))
+	.catch(err => console.error('Input failed:', err))
+
+async function start() {
+	let inputDom = judgeDom(inputTagName)
+	let btnDom = judgeDom(buttonTagName)
+	if (type === '${searchButton}') {
+		inputDom.value = ''
 		for (let i = 0; i < keyWord.length; i++) {
-			await new Promise(resolve => 
-				setTimeout(resolve, Math.random() * 300 + 100)
-			);
-			inputString(inputDom,keyWord[i])
+			await new Promise(resolve => setTimeout(resolve, Math.random() * 300 + 100))
+			inputString(inputDom, keyWord[i])
 		}
-		let pos = getDomPos(btnDom);
+		let pos = getDomPos(btnDom)
+		// console.log(pos)
 		JSBehavior.jsResult('3', pos.x + ',' + pos.y)
-		
-	}else if(type === '${searchInput}'){
-		let pos = getDomPos(inputDom);
+	} else if (type === '${searchInput}') {
+		let pos = getDomPos(inputDom)
+		// console.log(pos)
 		JSBehavior.jsResult('5', pos.x + ',' + pos.y)
 	}
 }
