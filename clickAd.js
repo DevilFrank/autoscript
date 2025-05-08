@@ -30,8 +30,8 @@ function randomPos(dom) {
 	let x, y
 	const time = Math.floor(Math.random() * 7000) + 3000
 	setTimeout(() => {
-		x = pos.left + Math.floor(Math.random() * (pos.width - 80)) + 40
-		y = pos.top + document.documentElement.scrollTop + Math.floor(Math.random() * (31 - 11)) + 11
+		y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
+		x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
 		JSBehavior.jsResult('1', x + ',' + y)
 	}, time)
 }

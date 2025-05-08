@@ -1,8 +1,8 @@
 var keyWord = { sk } //sk两边不能有空格，base64时注意
 var type = '${searchButton}' //`${searchInput}`-执行返回type5 输入框的坐标；`${searchButton}`-执行返回type3 搜索按钮的坐标，结束必须有分号
 
-var inputTagName = `textarea#SearchInputId`
-var buttonTagName = `div[data-tn-searchbox-dropdown="true"] div[data-tn-suggestion]`
+var inputTagName = `form[class="md:hidden flex justify-center"]:not(.hidden) input[type="search"][placeholder="Search..."]`
+var buttonTagName = `form[class="md:hidden flex justify-center"]:not(.hidden) button[type="submit"] i`
 function judgeDom(tagName) {
 	let tagArr = [document.querySelector(tagName)].filter(item => {
 		if (item != null) return item
@@ -106,7 +106,6 @@ function inputString(target, str, options = {}) {
 				// 标准输入控件
 				const newValue = originalValue.slice(0, selection.start) + str + originalValue.slice(selection.end)
 				target.value = newValue
-
 				// 触发输入法事件
 				await startComposition()
 			} else if (selection.range) {
@@ -145,7 +144,6 @@ function inputString(target, str, options = {}) {
 					})
 				)
 			}
-
 			// 触发 input/change 事件
 			const inputEvent = new InputEvent('input', {
 				data: str,
@@ -153,10 +151,8 @@ function inputString(target, str, options = {}) {
 				inputType: 'insertText',
 			})
 			target.dispatchEvent(inputEvent)
-
 			const changeEvent = new Event('change', { bubbles: true })
 			target.dispatchEvent(changeEvent)
-
 			// 更新选区
 			if (isInput) {
 				const newPos = selection.start + str.length
@@ -176,32 +172,12 @@ function inputString(target, str, options = {}) {
 	// 执行输入流程
 	return inputCore()
 }
-
-// 扩展键盘布局支持
-const KEY_LAYOUTS = {
-	'en-US': {
-		é: { code: 'KeyE', altKey: true, shiftKey: true },
-		ñ: { code: 'Semicolon', shiftKey: true },
-		ß: { code: 'KeyS', altKey: true },
-	},
-	'ru-RU': {
-		й: { code: 'KeyQ', altKey: false },
-		ц: { code: 'KeyW', altKey: false },
-	},
-}
-
-// 使用示例
-const textarea = document.querySelector('#SearchInputId')
-inputString(textarea, 'é', {
-	useComposition: true,
-	delay: 30,
-})
-	.then(() => console.log('Input successful'))
-	.catch(err => console.error('Input failed:', err))
-
 async function start() {
 	let inputDom = judgeDom(inputTagName)
 	let btnDom = judgeDom(buttonTagName)
+	if (!inputDom || !btnDom) {
+		JSBehavior.jsResult('3', '')
+	}
 	if (type === '${searchButton}') {
 		inputDom.value = ''
 		for (let i = 0; i < keyWord.length; i++) {
@@ -209,11 +185,9 @@ async function start() {
 			inputString(inputDom, keyWord[i])
 		}
 		let pos = getDomPos(btnDom)
-		// console.log(pos)
 		JSBehavior.jsResult('3', pos.x + ',' + pos.y)
 	} else if (type === '${searchInput}') {
 		let pos = getDomPos(inputDom)
-		// console.log(pos)
 		JSBehavior.jsResult('5', pos.x + ',' + pos.y)
 	}
 }
