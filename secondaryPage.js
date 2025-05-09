@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `h3 a.title`
+var tagName = `div.gs-webResult gs-result a`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count
