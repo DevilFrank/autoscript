@@ -1,8 +1,8 @@
 var keyWord = { sk } //sk两边不能有空格，base64时注意
 var type = '${searchButton}' //`${searchInput}`-执行返回type5 输入框的坐标；`${searchButton}`-执行返回type3 搜索按钮的坐标，结束必须有分号
 
-var inputTagName = `input#gsc-i-id1`
-var buttonTagName = `button.gsc-search-button.gsc-search-button-v2`
+var inputTagName = `form[class="md:hidden flex justify-center"]:not(.hidden) input[type="search"][placeholder="Search..."]`
+var buttonTagName = `form[class="md:hidden flex justify-center"]:not(.hidden) button[type="submit"] i`
 function judgeDom(tagName) {
 	let tagArr = [document.querySelector(tagName)].filter(item => {
 		if (item != null) return item

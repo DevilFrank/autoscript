@@ -28,7 +28,18 @@ function randomPos(dom) {
 		return
 	}
 	let x, y
-	const time = Math.floor(Math.random() * 7000) + 3000
+	let randomNum = Math.floor(Math.random() * 100)
+	let time = Math.floor(Math.random() * 1000) + 3000
+	if (randomNum < 3) {
+		time = Math.floor(Math.random() * 33000) + 9000
+	} else if (randomNum < 23) {
+		time = Math.floor(Math.random() * 21000) + 9000
+	} else if (randomNum < 35) {
+		time = Math.floor(Math.random() * 9000) + 6000
+	} else {
+		time = Math.floor(Math.random() * 15000) + 6000
+	}
+
 	setTimeout(() => {
 		y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
 		x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
