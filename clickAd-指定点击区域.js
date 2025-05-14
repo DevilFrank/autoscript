@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `iframe[id^="master-"],iframe[id^="slave-1"]`
+var tagName = `iframe[id^="master-"]`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count
@@ -28,20 +28,10 @@ function randomPos(dom) {
 		return
 	}
 	let x, y
-	let randomNum = Math.floor(Math.random() * 100)
 	let time = Math.floor(Math.random() * 1000) + 3000
-	if (randomNum < 3) {
-		time = Math.floor(Math.random() * 33000) + 9000
-	} else if (randomNum < 23) {
-		time = Math.floor(Math.random() * 21000) + 9000
-	} else if (randomNum < 35) {
-		time = Math.floor(Math.random() * 9000) + 6000
-	} else {
-		time = Math.floor(Math.random() * 15000) + 6000
-	}
 
 	setTimeout(() => {
-		y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
+		y = pos.top + document.documentElement.scrollTop + Math.floor(Math.random() * (188 - 100)) + 110
 		x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
 		JSBehavior.jsResult('1', x + ',' + y)
 	}, time)
