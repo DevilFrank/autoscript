@@ -31,7 +31,7 @@ function randomPos(dom) {
 	let time = Math.floor(Math.random() * 1000) + 3000
 
 	setTimeout(() => {
-		y = pos.top + document.documentElement.scrollTop + Math.floor(Math.random() * (188 - 100)) + 110
+		y = pos.top + document.documentElement.scrollTop + Math.floor(Math.random() * (142 - 90)) + 90
 		x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
 		JSBehavior.jsResult('1', x + ',' + y)
 	}, time)
