@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `ul.b_vList b_divsec li div a`
+var tagName = `div.compList ul li a`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count

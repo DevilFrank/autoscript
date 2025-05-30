@@ -1,12 +1,25 @@
 var count = 0
-var tagName = `a[href*="bing.com/aclick"],a[href*="bing.com/aclk"],a[href*="yahoo.com/cbclk"],a[href*="yahoo.com/cbclk"],a[href*="pagead/aclk"]`
+var tagName = `section.reg.searchSuperTopAds a`
 function q(tag) {
-	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
+	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
-	if (Array.isArray(res)) {
-		randomPos(randomItem(res))
+	const viewportWidth = window.innerWidth
+	const visibleElements = allElements.filter(element => {
+		const rect = element.getBoundingClientRect()
+		return rect.right > 0 && rect.left < viewportWidth
+	})
+
+	if (visibleElements.length > 0) {
+		randomPos(randomItem(visibleElements))
 	} else {
-		randomPos(res)
+		if (count > 3) {
+			count = 0
+			JSBehavior.jsResult('1', '')
+		} else {
+			setTimeout(() => {
+				q(tagName)
+			}, 3000)
+		}
 	}
 }
 function randomPos(dom) {
