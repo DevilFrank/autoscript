@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `section.reg.searchSuperTopAds a`
+var tagName = `iframe[id^="master-"]`
 function q(tag) {
 	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
