@@ -19,7 +19,7 @@ function b(c) {
 	}
 }
 function getAds() {
-	const result = Array.from(document.querySelectorAll(`iframe[id^="google_ads_iframe_"]`))
+	const result = Array.from(document.querySelectorAll(`iframe[id^="aswift_"]`))
 	f = b(result)
 	if (!f || result.length <= 0) {
 		if (--tryTime <= 0) {

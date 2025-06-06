@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `iframe[id^="master-"]`
+var tagName = `iframe[id^="master-"],iframe[id^="slave-"]`
 function q(tag) {
 	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
@@ -83,12 +83,7 @@ function isElementVisible(element) {
 		}
 		return false
 	}
-	return isElementInViewport(element)
-}
-
-function isElementInViewport(element) {
-	const rect = element.getBoundingClientRect()
-	return rect.top < window.innerHeight && rect.bottom > 0 && rect.left < window.innerWidth && rect.right > 0
+	return true
 }
 
 q(tagName)

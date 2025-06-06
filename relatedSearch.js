@@ -43,9 +43,32 @@ function randomItem(list, fn) {
 		}
 	let _n = list
 		.filter(i => {
-			if (i.offsetWidth > 0 && i.offsetHeight > 0) return i
+			if (isElementVisible(i)) return i
 		})
 		.filter(_fn)
 	return _n[Math.floor(Math.random() * _n.length)]
+}
+
+function isElementVisible(element) {
+	if (!element) return false
+	if (!document.body.contains(element)) return false
+	let current = element
+	while (current) {
+		const style = window.getComputedStyle(current)
+		if (style.display === 'none') return false
+		current = current.parentElement
+	}
+	const style = window.getComputedStyle(element)
+	if (style.visibility === 'hidden' || style.opacity === '0') {
+		return false
+	}
+	const rect = element.getBoundingClientRect()
+	if (rect.width === 0 || rect.height === 0) {
+		if (element instanceof SVGElement) {
+			return element.hasChildNodes()
+		}
+		return false
+	}
+	return true
 }
 q(tagName)
