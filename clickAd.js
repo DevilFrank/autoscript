@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `iframe[id^="master-"],iframe[id^="slave-"]`
+var tagName = `a[href*="bing.com/aclick"],a[href*="bing.com/aclk"],a[href*="yahoo.com/cbclk"],a[href*="yahoo.com/cbclk"],a[href*="pagead/aclk"]`
 function q(tag) {
 	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
