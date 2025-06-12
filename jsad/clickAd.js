@@ -1,4 +1,4 @@
-var tryTime = 3
+var count = 0
 function b(c) {
 	var _n = c.filter(i => {
 		if (isElementVisible(i)) return i
@@ -19,10 +19,19 @@ function b(c) {
 	}
 }
 function getAds() {
+	++count
+	console.log('count==>', count)
 	const result = Array.from(document.querySelectorAll(`iframe[id^="aswift_"]`))
 	f = b(result)
 	if (!f) {
-		JSBehavior.jsResult('7', '')
+		if (count > 3) {
+			count = 0
+			JSBehavior.jsResult('7', '')
+		} else {
+			setTimeout(() => {
+				getAds()
+			}, 5000)
+		}
 	} else {
 		JSBehavior.jsResult('7', `${f.x},${f.y}`)
 	}
@@ -49,5 +58,6 @@ function isElementVisible(element) {
 	}
 	return true
 }
-
-getAds()
+setTimeout(() => {
+	getAds()
+}, Math.floor(Math.random() * 15000) + 15000)

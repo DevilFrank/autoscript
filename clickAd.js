@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `a[href*="bing.com/aclick"],a[href*="bing.com/aclk"],a[href*="yahoo.com/cbclk"],a[href*="yahoo.com/cbclk"],a[href*="pagead/aclk"]`
+var tagName = `iframe[id^="master-"]`
 function q(tag) {
 	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
@@ -41,13 +41,9 @@ function randomPos(dom) {
 		return
 	}
 	let x, y
-	let time = Math.floor(Math.random() * 1000) + 3000
-
-	setTimeout(() => {
-		y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
-		x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
-		JSBehavior.jsResult('1', x + ',' + y)
-	}, time)
+	y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
+	x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
+	JSBehavior.jsResult('1', x + ',' + y)
 }
 function randomItem(list, fn) {
 	let _fn =

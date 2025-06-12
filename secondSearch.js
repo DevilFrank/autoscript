@@ -1,7 +1,7 @@
 var keyWord = { sk }
 var type = '${searchButton}'
 
-var inputTagName = `input#q`
+var inputTagName = `input#search-form__input`
 var buttonTagName = `button.search-form__button`
 function judgeDom(tagName) {
 	let tagArr = [document.querySelector(tagName)].filter(item => {
