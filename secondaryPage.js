@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `div.gs-title a.gs-title`
+var tagName = `a.web-brave__result_anchor`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count
