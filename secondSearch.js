@@ -1,8 +1,8 @@
 var keyWord = { sk }
 var type = '${searchButton}'
 
-var inputTagName = `input#searchB`
-var buttonTagName = `button#searchicon`
+var inputTagName = `input#gsc-i-id1`
+var buttonTagName = `button.gsc-search-button.gsc-search-button-v2`
 function judgeDom(tagName) {
 	let tagArr = [document.querySelector(tagName)].filter(item => {
 		if (item != null) return item
