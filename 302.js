@@ -1,6 +1,5 @@
 window.onload = function () {
-	window.location.href =
-		'https://sites.allinfohome.com/articles/comprehensive-guide-to-cataract-surgery-options-recovery-costs-risks-and-finding-the-best-care?gads=67fcd605bd687947150887e5'
+	window.location.href = 'https://6423.us.icusearch.com/search/?sid=6423&query=car'
 }
 
 // https://m.facebook.com
