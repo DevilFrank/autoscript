@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `ul.index_list li a`
+var tagName = `a:not([href*="bing.com/aclick"]):not([href*="bing.com/aclk"]):not([href*="yahoo.com/cbclk"]):not([href*="yahoo.com/cbclk"]):not([href*="pagead/aclk"])`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count

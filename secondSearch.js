@@ -1,8 +1,8 @@
 var keyWord = { sk }
 var type = '${searchButton}'
 
-var inputTagName = `input#search_input_in`
-var buttonTagName = `img.search_btn`
+var inputTagName = `input#q`
+var buttonTagName = `button.search-form__button`
 function judgeDom(tagName) {
 	let tagArr = [document.querySelector(tagName)].filter(item => {
 		if (item != null) return item
