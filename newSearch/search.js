@@ -1,5 +1,5 @@
 var keyWord = `{sk}`
-var type = '${searchButton}'
+var type = '${stap}'
 var inputTagName = `{inputtagname}`
 var buttonTagName = `{buttontagname}`
 function judgeDom(tagName) {
@@ -185,7 +185,7 @@ async function start() {
 		}
 		let pos = getDomPos(btnDom)
 		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '', '', '')
-	} else if (type === '${searchInput}') {
+	} else {
 		let pos = getDomPos(inputDom)
 		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '{searchButton}', '', 'false')
 	}

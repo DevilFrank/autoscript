@@ -1,41 +1,64 @@
 var count = 0
-function b(c) {
-	var _n = c.filter(i => {
-		if (isElementVisible(i)) return i
-	})
-	var d = _n[Math.floor(Math.random() * _n.length)]
-	if (!d) {
-		return null
-	}
-	var e = d.getBoundingClientRect()
-	if (!e || e.width <= 0 || e.height <= 0) {
-		return null
-	}
-	var x = e.left + Math.floor(Math.random() * d.offsetWidth)
-	var y = e.top + window.scrollY + Math.floor(Math.random() * d.offsetHeight)
-	return {
-		x,
-		y,
-	}
-}
-function getAds() {
+var tagName = `iframe[id^="google_ads_iframe_/"]`
+function q(tag) {
+	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
-	console.log('count==>', count)
-	const result = Array.from(document.querySelectorAll(`iframe[id^="aswift_"]`))
-	f = b(result)
-	if (!f) {
+	const viewportWidth = window.innerWidth
+	const visibleElements = allElements.filter(element => {
+		const rect = element.getBoundingClientRect()
+		return rect.right > 0 && rect.left < viewportWidth
+	})
+
+	if (visibleElements.length > 0) {
+		randomPos(randomItem(visibleElements))
+	} else {
 		if (count > 3) {
 			count = 0
 			JSBehavior.jsResult('7', '')
 		} else {
 			setTimeout(() => {
-				getAds()
-			}, 5000)
+				q(tagName)
+			}, 3000)
 		}
-	} else {
-		JSBehavior.jsResult('7', `${f.x},${f.y}`)
 	}
 }
+function randomPos(dom) {
+	if (!dom) {
+		if (count > 3) {
+			count = 0
+			JSBehavior.jsResult('7', '')
+		} else {
+			setTimeout(() => {
+				q(tagName)
+			}, 3000)
+		}
+		return
+	}
+	let pos = dom.getBoundingClientRect()
+	if (pos.width === 0 || pos.height === 0) {
+		JSBehavior.jsResult('7', '')
+		console.log(1, pos)
+		return
+	}
+	let x, y
+	y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
+	x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
+	JSBehavior.jsResult('7', x + ',' + y)
+}
+function randomItem(list, fn) {
+	let _fn =
+		fn ||
+		function (i) {
+			return i
+		}
+	let _n = list
+		.filter(i => {
+			if (isElementVisible(i)) return i
+		})
+		.filter(_fn)
+	return _n[Math.floor(Math.random() * _n.length)]
+}
+
 function isElementVisible(element) {
 	if (!element) return false
 	if (!document.body.contains(element)) return false
@@ -58,6 +81,5 @@ function isElementVisible(element) {
 	}
 	return true
 }
-setTimeout(() => {
-	getAds()
-}, Math.floor(Math.random() * 15000) + 15000)
+
+q(tagName)
