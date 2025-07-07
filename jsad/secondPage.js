@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `div.list_game_item a.item-game`
+var tagName = `div.game-item a`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count

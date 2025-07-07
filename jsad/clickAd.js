@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `iframe[id^="google_ads_iframe_/"]`
+var tagName = `ins div[id^="aswift_"] iframe[id^="aswift_"]`
 function q(tag) {
 	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
