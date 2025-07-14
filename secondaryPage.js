@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `a:not([href*="bing.com/aclick"]):not([href*="bing.com/aclk"]):not([href*="yahoo.com/cbclk"]):not([href*="yahoo.com/cbclk"]):not([href*="pagead/aclk"])`
+var tagName = `div.gs-webResult.gs-result a`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count

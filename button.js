@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `iframe[id^="master-"]`
+var tagName = `button`
 function q(tag) {
 	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
@@ -14,7 +14,7 @@ function q(tag) {
 	} else {
 		if (count > 3) {
 			count = 0
-			JSBehavior.jsResult('1', '')
+			JSBehavior.jsResult('7', '')
 		} else {
 			setTimeout(() => {
 				q(tagName)
@@ -26,7 +26,7 @@ function randomPos(dom) {
 	if (!dom) {
 		if (count > 3) {
 			count = 0
-			JSBehavior.jsResult('1', '')
+			JSBehavior.jsResult('7', '')
 		} else {
 			setTimeout(() => {
 				q(tagName)
@@ -36,14 +36,14 @@ function randomPos(dom) {
 	}
 	let pos = dom.getBoundingClientRect()
 	if (pos.width === 0 || pos.height === 0) {
-		JSBehavior.jsResult('1', '')
+		JSBehavior.jsResult('7', '')
 		console.log(1, pos)
 		return
 	}
 	let x, y
 	y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
 	x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
-	JSBehavior.jsResult('1', x + ',' + y)
+	JSBehavior.jsResult('7', x + ',' + y)
 }
 function randomItem(list, fn) {
 	let _fn =

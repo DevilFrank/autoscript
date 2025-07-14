@@ -1,7 +1,8 @@
 var keyWord = `{sk}`
-var type = '${stap}'
+var type = '${step}'
 var inputTagName = `{inputtagname}`
 var buttonTagName = `{buttontagname}`
+var pageFinish = `{pagefinish}`
 function judgeDom(tagName) {
 	let tagArr = [document.querySelector(tagName)].filter(item => {
 		if (item != null) return item
@@ -184,10 +185,10 @@ async function start() {
 			inputString(inputDom, keyWord[i])
 		}
 		let pos = getDomPos(btnDom)
-		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '', '', '')
+		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '', '', pageFinish)
 	} else {
 		let pos = getDomPos(inputDom)
-		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '{searchButton}', '', 'false')
+		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '{searchButton}', '', pageFinish)
 	}
 }
 start()
