@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `div.container > p`
+var tagName = `iframe[id^="master-"]`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count
