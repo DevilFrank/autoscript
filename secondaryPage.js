@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `div.gs-webResult.gs-result a`
+var tagName = `div.serp-item serp-list__card a`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count

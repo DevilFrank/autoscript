@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `div.game-item a`
+var tagName = `ul.prime-carousel-container li div a`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count

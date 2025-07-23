@@ -81,3 +81,4 @@ function isElementVisible(element) {
 	}
 	return true
 }
+q(tagName)
