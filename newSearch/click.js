@@ -1,3 +1,5 @@
+var pageFinish = `{pagefinish}`
+var slide = `{slide}`
 function startInteractiveSimulation({
 	selector = '',
 	resultCode = '1',
@@ -10,7 +12,7 @@ function startInteractiveSimulation({
 	// 辅助函数
 	const randomItem = array => array[Math.floor(Math.random() * array.length)]
 
-	const reportResult = coordinates => JSBehavior.jsResult(resultCode, coordinates, '', 'false', '')
+	const reportResult = coordinates => JSBehavior.jsResult(resultCode, coordinates, '', slide, pageFinish)
 	if (!selector) {
 		reportResult('')
 		return

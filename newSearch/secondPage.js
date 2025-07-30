@@ -1,5 +1,7 @@
 var count = 0
 var tagName = `{tagname}`
+var pageFinish = `{pagefinish}`
+var slide = `{slide}`
 function q(tag) {
 	let res = Array.prototype.slice.call(document.querySelectorAll(tag))
 	++count
@@ -13,7 +15,7 @@ function randomPos(dom) {
 	if (!dom) {
 		if (count > 3) {
 			count = 0
-			JSBehavior.jsResult('secondpage', '', '', '', '')
+			JSBehavior.jsResult('secondpage', '', '', slide, pageFinish)
 		} else {
 			setTimeout(() => {
 				q(tagName)
@@ -23,7 +25,7 @@ function randomPos(dom) {
 	}
 	let pos = dom.getBoundingClientRect()
 	if (pos.width === 0 || pos.height === 0) {
-		JSBehavior.jsResult('secondpage', '', '', '', '')
+		JSBehavior.jsResult('secondpage', '', '', slide, pageFinish)
 		console.log(1, pos)
 		return
 	}
@@ -32,7 +34,7 @@ function randomPos(dom) {
 	setTimeout(() => {
 		y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
 		x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
-		JSBehavior.jsResult('secondpage', x + ',' + y, '', '', '')
+		JSBehavior.jsResult('secondpage', x + ',' + y, '', slide, pageFinish)
 	}, time)
 }
 function randomItem(list, fn) {

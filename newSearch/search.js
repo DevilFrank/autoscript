@@ -3,6 +3,7 @@ var type = '${step}'
 var inputTagName = `{inputtagname}`
 var buttonTagName = `{buttontagname}`
 var pageFinish = `{pagefinish}`
+var slide = `{slide}`
 function judgeDom(tagName) {
 	let tagArr = [document.querySelector(tagName)].filter(item => {
 		if (item != null) return item
@@ -176,7 +177,7 @@ async function start() {
 	let inputDom = judgeDom(inputTagName)
 	let btnDom = judgeDom(buttonTagName)
 	if (!inputDom || !btnDom) {
-		JSBehavior.jsResult('search', '', '', '', '')
+		JSBehavior.jsResult('search', '', '', slide, pageFinish)
 	}
 	if (type === '${searchButton}') {
 		inputDom.value = ''
@@ -185,10 +186,10 @@ async function start() {
 			inputString(inputDom, keyWord[i])
 		}
 		let pos = getDomPos(btnDom)
-		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '', '', pageFinish)
+		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '', slide, pageFinish)
 	} else {
 		let pos = getDomPos(inputDom)
-		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '{searchButton}', '', pageFinish)
+		JSBehavior.jsResult('search', pos.x + ',' + pos.y, '{searchButton}', slide, pageFinish)
 	}
 }
 start()

@@ -1,5 +1,7 @@
 var count = 0
 var tagName = `{tagname}`
+var pageFinish = `{pagefinish}`
+var slide = `{slide}`
 function q(tag) {
 	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
@@ -14,7 +16,7 @@ function q(tag) {
 	} else {
 		if (count > 3) {
 			count = 0
-			JSBehavior.jsResult('clickad', '', '', '', '')
+			JSBehavior.jsResult('clickad', '', '', slide, pageFinish)
 		} else {
 			setTimeout(() => {
 				q(tagName)
@@ -26,7 +28,7 @@ function randomPos(dom) {
 	if (!dom) {
 		if (count > 3) {
 			count = 0
-			JSBehavior.jsResult('clickad', '', '', '', '')
+			JSBehavior.jsResult('clickad', '', '', slide, pageFinish)
 		} else {
 			setTimeout(() => {
 				q(tagName)
@@ -36,14 +38,14 @@ function randomPos(dom) {
 	}
 	let pos = dom.getBoundingClientRect()
 	if (pos.width === 0 || pos.height === 0) {
-		JSBehavior.jsResult('clickad', '', '', '', '')
+		JSBehavior.jsResult('clickad', '', '', slide, pageFinish)
 		console.log(1, pos)
 		return
 	}
 	let x, y
 	y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
 	x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
-	JSBehavior.jsResult('clickad', x + ',' + y, '', '', '')
+	JSBehavior.jsResult('clickad', x + ',' + y, '', slide, pageFinish)
 }
 function randomItem(list, fn) {
 	let _fn =
