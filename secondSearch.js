@@ -1,8 +1,8 @@
 var keyWord = { sk }
 var type = '${searchButton}'
 
-var inputTagName = `textarea#sb_form_q`
-var buttonTagName = `input#sb_form_go`
+var inputTagName = `input#gsc-i-id1`
+var buttonTagName = `button.gsc-search-button.gsc-search-button-v2`
 function judgeDom(tagName) {
 	let tagArr = [document.querySelector(tagName)].filter(item => {
 		if (item != null) return item
@@ -188,7 +188,7 @@ async function start() {
 		JSBehavior.jsResult('3', pos.x + ',' + pos.y)
 	} else if (type === '${searchInput}') {
 		let pos = getDomPos(inputDom)
-		JSBehavior.jsResult('5', pos.x + ',' + pos.y)
+		JSBehavior.jsResult('6', pos.x + ',' + pos.y)
 	}
 }
 start()
