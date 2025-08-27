@@ -1,5 +1,5 @@
 var count = 0
-var tagName = `{tagname}`
+var tagName = `a`
 var pageFinish = `{pagefinish}`
 var slide = `{slide}`
 function q(tag) {
@@ -25,6 +25,7 @@ function q(tag) {
 	}
 }
 function randomPos(dom) {
+	console.log('clickAd', dom)
 	if (!dom) {
 		if (count > 3) {
 			count = 0
@@ -80,6 +81,27 @@ function isElementVisible(element) {
 		}
 		return false
 	}
+	if (checkFullscreenObstruction()) {
+		return false
+	}
 	return true
+}
+
+function checkFullscreenObstruction() {
+	const allElements = document.querySelectorAll('*')
+	for (let el of allElements) {
+		const style = window.getComputedStyle(el)
+		if (style.position === 'fixed') {
+			const coversViewport = el.offsetWidth >= window.innerWidth && el.offsetHeight >= window.innerHeight
+
+			const isVisible = style.visibility !== 'hidden' && style.display !== 'none' && style.opacity !== '0'
+			const hasHighZIndex = parseInt(style.zIndex) >= 100
+
+			if (coversViewport && isVisible && hasHighZIndex) {
+				return true
+			}
+		}
+	}
+	return false
 }
 q(tagName)
