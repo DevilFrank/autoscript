@@ -2,7 +2,7 @@ var count = 0
 var tagName = `{tagname}`
 var pageFinish = `{pagefinish}`
 var slide = `{slide}`
-function q(tag) {
+function pneumonoultramicroscopicsilicovolcanoconiosis(tag) {
 	let allElements = Array.from(document.querySelectorAll(tag))
 	++count
 	const viewportWidth = window.innerWidth
@@ -19,7 +19,7 @@ function q(tag) {
 			JSBehavior.jsResult('checkad', '', '', slide, pageFinish)
 		} else {
 			setTimeout(() => {
-				q(tagName)
+				pneumonoultramicroscopicsilicovolcanoconiosis(tagName)
 			}, 3000)
 		}
 	}
@@ -31,7 +31,7 @@ function randomPos(dom) {
 			JSBehavior.jsResult('checkad', '', '', slide, pageFinish)
 		} else {
 			setTimeout(() => {
-				q(tagName)
+				pneumonoultramicroscopicsilicovolcanoconiosis(tagName)
 			}, 3000)
 		}
 		return
@@ -82,4 +82,4 @@ function isElementVisible(element) {
 	}
 	return true
 }
-q(tagName)
+pneumonoultramicroscopicsilicovolcanoconiosis(tagName)

@@ -1,6 +1,6 @@
 var count = 0
-var step = `{step}`
-var config = `{config}`
+var step = `clickad`
+var config = `[ 	{ "jsKey": "agreement", "tagName": "button.fc-button.fc-cta-consent.fc-primary-button", "pageFinish": "false", "slide": "false" }, 	{ "jsKey": "agreementclose", "tagName": "button.fc-button.fc-cta-consent.fc-primary-button", "pageFinish": "false", "slide": "false" }, 	{ "jsKey": "interstitial", "tagName": "html>ins iframe[id^='aswift_'][style*='vh']", "pageFinish": "true", "slide": "false" }, 	{ "jsKey": "interstitialclose", "tagName": "div.close-button", "pageFinish": "false", "slide": "false" }, 	{ "jsKey": "secondpage", "tagName": "div.game-item", "pageFinish": "true", "slide": "true" },   { 		"jsKey": "banner", 		"tagName": "body>ins[class*='adsbygoogle'][style*='position: fixed'] div[id^='aswift_'] iframe[id^='aswift_']", 		"pageFinish": "true", 		"slide": "false" 	}, 	{ 		"jsKey": "clickad", 		"tagName": "div#app ins[class*='adsbygoogle'] div[id^='aswift_'] iframe[id^='aswift_']", 		"pageFinish": "true", 		"slide": "true" 	} ]`
 var configObj = JSON.parse(config)
 var { tagName, pageFinish, slide } = configObj.find(item => item.jsKey === step)
 function findAndClickElement(tag) {
@@ -15,6 +15,7 @@ function findAndClickElement(tag) {
 		const rect = element.getBoundingClientRect()
 		return rect.right > 0 && rect.left < viewportWidth && isElementVisible(element)
 	})
+	console.log('findAndClickElement==>', visibleElements)
 
 	if (visibleElements.length > 0) {
 		clickRandomPosition(getRandomVisibleElement(visibleElements))
@@ -23,6 +24,8 @@ function findAndClickElement(tag) {
 	}
 }
 function clickRandomPosition(element) {
+	console.log('clickRandomPosition==>', element)
+
 	if (!element) {
 		handleRetry(tagName)
 		return
@@ -86,8 +89,34 @@ function handleRetry(tag) {
 	}
 }
 function reportClick(x = '', y = '') {
+	console.log('reportClick', step, x, y)
+	if (x && y) {
+		createMarker(x, y)
+	}
 	const position = x && y ? `${x},${y}` : ''
-	JSBehavior.jsResult(step, position, '', slide, pageFinish)
+	// JSBehavior.jsResult(step, position, '', slide, pageFinish)
+}
+function createMarker(x, y) {
+	// 移除旧标记
+	const existingMarkers = document.querySelectorAll('.coord-marker')
+	existingMarkers.forEach(marker => marker.remove())
+
+	// 创建新标记
+	const marker = document.createElement('div')
+	marker.className = 'coord-marker'
+	marker.style.cssText = `
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 0, 0, 0.3);
+    pointer-events: none;
+    z-index: 999999;
+    transform: translate(-100%, -100%);
+    left: ${x}px;
+    top: ${y}px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 0, 0, 0.5);
+  `
+	document.body.appendChild(marker)
 }
 findAndClickElement(tagName)
-// `[{ jsKey: 'agreement', tagName: 'button.fc-button.fc-cta-consent.fc-primary-button', pageFinish: 'false', slide: 'false' },{ jsKey: 'agreementclose', tagName: 'button.fc-button.fc-cta-consent.fc-primary-button', pageFinish: 'false', slide: 'false' },{ jsKey: 'banner', tagName: "iframe[id^='google_ads_iframe_/'][id*="Anchor"]", pageFinish: 'true', slide: 'false' },{ jsKey: 'interstitial', tagName: "html>ins>div>iframe[id^='google_ads_iframe_/']", pageFinish: 'true', slide: 'false' },{ jsKey: 'interstitialclose', tagName: 'div.close-button', pageFinish: 'false', slide: 'false' },{ jsKey: 'secondpage', tagName: 'a.classification-item', pageFinish: 'true', slide: 'true' },{ jsKey: 'clickad', tagName: "iframe[id^='google_ads_iframe_/'][id*="Banner"]", pageFinish: 'true', slide: 'true' }]`

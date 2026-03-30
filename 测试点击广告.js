@@ -1,112 +1,97 @@
 var count = 0
-var tagName = `iframe[id^="aswift_"]`
-function q(tag) {
-	let allElements = Array.from(document.querySelectorAll(tag))
-	++count
-	const viewportWidth = window.innerWidth
-	const visibleElements = allElements.filter(element => {
-		const rect = element.getBoundingClientRect()
-		return rect.right > 0 && rect.left < viewportWidth
-	})
+var tagName = `div.mgbox`
+var pageFinish = `true`
+var slide = `true`
+var isEnable = `true`
 
-	if (visibleElements.length > 0) {
-		randomPos(randomItem(visibleElements))
+function noResult() {
+	console.log('No visible ad elements found after multiple attempts.')
+	// JSBehavior.jsResult('clickad', '', '', slide, pageFinish)
+}
+
+function retry() {
+	if (++count > 3) {
+		count = 0
+		noResult()
 	} else {
-		if (count > 3) {
-			count = 0
-			// JSBehavior.jsResult('7', '')
-		} else {
-			setTimeout(() => {
-				q(tagName)
-			}, 3000)
-		}
+		setTimeout(() => q(tagName), 3000)
 	}
-}
-function randomPos(dom) {
-	console.log('dom==>', dom)
-	if (!dom) {
-		if (count > 3) {
-			count = 0
-			// JSBehavior.jsResult('7', '')
-		} else {
-			setTimeout(() => {
-				q(tagName)
-			}, 3000)
-		}
-		return
-	}
-	let pos = dom.getBoundingClientRect()
-	if (pos.width === 0 || pos.height === 0) {
-		// JSBehavior.jsResult('7', '')
-		console.log(1, pos)
-		return
-	}
-	let x, y
-	y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * (pos.height - pos.height * 0.2)
-	x = pos.left + pos.width * 0.1 + Math.random() * (pos.width - pos.width * 0.2)
-	console.log('xy==>', x, y)
-	createMarker(x, y)
-	// JSBehavior.jsResult('7', x + ',' + y)
-}
-function randomItem(list, fn) {
-	let _fn =
-		fn ||
-		function (i) {
-			return i
-		}
-	let _n = list
-		.filter(i => {
-			if (isElementVisible(i)) return i
-		})
-		.filter(_fn)
-	return _n[Math.floor(Math.random() * _n.length)]
 }
 
-function isElementVisible(element) {
-	if (!element) return false
-	if (!document.body.contains(element)) return false
-	let current = element
-	while (current) {
-		const style = window.getComputedStyle(current)
-		if (style.display === 'none') return false
-		current = current.parentElement
+function isVisible(el) {
+	if (!el || !document.body.contains(el)) return false
+	let node = el
+	while (node) {
+		if (getComputedStyle(node).display === 'none') return false
+		node = node.parentElement
 	}
-	const style = window.getComputedStyle(element)
-	if (style.visibility === 'hidden' || style.opacity === '0') {
-		return false
-	}
-	const rect = element.getBoundingClientRect()
-	if (rect.width === 0 || rect.height === 0) {
-		if (element instanceof SVGElement) {
-			return element.hasChildNodes()
-		}
-		return false
-	}
-	return true
+	const style = getComputedStyle(el)
+	if (style.visibility === 'hidden' || style.opacity === '0') return false
+	const rect = el.getBoundingClientRect()
+	return (rect.width > 0 && rect.height > 0) || (el instanceof SVGElement && el.hasChildNodes())
 }
 
-function createMarker(x, y) {
-	// 移除旧标记
-	const existingMarkers = document.querySelectorAll('.coord-marker')
-	existingMarkers.forEach(marker => marker.remove())
+function pickElement(list) {
+	const visible = list.filter(isVisible)
+	console.log('Visible ad elements:', visible)
+	if (!visible.length) return null
+	if (visible.length === 1) return visible[0]
 
-	// 创建新标记
-	const marker = document.createElement('div')
-	marker.className = 'coord-marker'
-	marker.style.cssText = `
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background: rgba(255, 0, 0, 0.3);
-    pointer-events: none;
-    z-index: 999999;
-    transform: translate(-100%, -100%);
-    left: ${x}px;
-    top: ${y}px;
-    border-radius: 3px;
-    border: 1px solid rgba(255, 0, 0, 0.5);
-  `
-	document.body.appendChild(marker)
+	if (isEnable === 'true' || isEnable === true) {
+		// 返回距离可视区域最近的元素
+		const vTop = scrollY,
+			vBottom = vTop + innerHeight
+		return visible.reduce(
+			(closest, el) => {
+				const rect = el.getBoundingClientRect()
+				const top = rect.top + scrollY,
+					bottom = top + rect.height
+				const dist = bottom < vTop ? vTop - bottom : top > vBottom ? top - vBottom : 0
+				return dist < closest.dist ? { el, dist } : closest
+			},
+			{ el: null, dist: Infinity },
+		).el
+	}
+	return visible[Math.floor(Math.random() * visible.length)]
+}
+
+function drawPoint(x, y) {
+	const dot = document.createElement('div')
+	dot.style.cssText = `
+		position: absolute;
+		left: ${x - 5}px;
+		top: ${y - 5}px;
+		width: 10px;
+		height: 10px;
+		background: red;
+		border-radius: 50%;
+		z-index: 999999;
+		pointer-events: none;
+		box-shadow: 0 0 4px rgba(255,0,0,0.8);
+	`
+	document.body.appendChild(dot)
+	console.log('点击坐标:', x, y)
+}
+
+function q(tag) {
+	const elements = [...document.querySelectorAll(tag)].filter(el => {
+		const rect = el.getBoundingClientRect()
+		return rect.right > 0 && rect.left < innerWidth
+	})
+	console.log('Found ad elements:', elements)
+	const dom = pickElement(elements)
+	console.log('Picked ad element:', dom)
+	if (!dom) return retry()
+
+	const pos = dom.getBoundingClientRect()
+	if (!pos.width || !pos.height) return noResult()
+
+	const x = pos.left + pos.width * 0.1 + Math.random() * pos.width * 0.8
+	const y = pos.top + pos.height * 0.1 + document.documentElement.scrollTop + Math.random() * pos.height * 0.8
+	console.log('Ad click coordinates:', x, y)
+	// 测试：在页面上画红点显示坐标位置
+	drawPoint(x, y)
+	// JSBehavior.jsResult('clickad', x + ',' + y, '', slide, pageFinish)
 }
 
 q(tagName)
