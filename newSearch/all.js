@@ -7,33 +7,51 @@ function allACtion(jskey) {
 	// secondpage - 二级页面
 	// associationsearch - 关联搜索
 	// checkpage - 检测可执行动作
-
+	const searchText = `iphone17`
 	const ACTION_KEY = {
-		AGREEMENT: 'div[class*="agreement"]',
-		CLICK: 'div[class*="click"]',
-		CHECKAD: 'div[class*="checkad"]',
-		CLICKAD: 'section[class*="card"]',
-		SEARCH: 'span[class*="search"]',
-		SECONDPAGE: 'div[class*="secondpage"]',
-		ASSOCIATIONSEARCH: 'div[class*="associationsearch"]',
+		AGREEMENT: {
+			selector: 'div[class*="agreement"]',
+			pageFinish: 'false',
+			slide: 'false',
+		},
+		CLICK: {
+			selector: 'div[class*="click"]',
+			pageFinish: 'false',
+			slide: 'false',
+		},
+		CHECKAD: {
+			selector: 'div[class*="checkad"]',
+			pageFinish: 'false',
+			slide: 'false',
+		},
+		CLICKAD: {
+			selector: 'section[class*="card"]',
+			pageFinish: 'false',
+			slide: 'false',
+		},
+		SEARCH: {
+			selector: 'span[class*="search"]',
+			inputSelector: 'input[type="text"], input[type="search"]',
+			buttonSelector: 'button[type="submit"], button[class*="search"]',
+			pageFinish: 'false',
+			slide: 'false',
+		},
+		SECONDPAGE: {
+			selector: 'div[class*="secondpage"]',
+			pageFinish: 'false',
+			slide: 'false',
+		},
+		ASSOCIATIONSEARCH: {
+			selector: 'div[class*="associationsearch"]',
+			pageFinish: 'false',
+			slide: 'false',
+		},
 	}
 
 	const normalizeAction = String(jskey || '')
 		.trim()
 		.replace(/[\s_-]+/g, '')
 		.toUpperCase()
-	const selector = ACTION_KEY[normalizeAction]
-
-	if (!selector) {
-		return {
-			action: normalizeAction,
-			selector: '',
-			elements: [],
-			randomElement: null,
-			randomCoordinate: null,
-			coordinate: '',
-		}
-	}
 
 	const viewportWidth = window.innerWidth || document.documentElement.clientWidth
 	const viewportHeight = window.innerHeight || document.documentElement.clientHeight
@@ -123,40 +141,59 @@ function allACtion(jskey) {
 		return null
 	}
 
+	const getValidElementsWithPointBySelector = selector => {
+		const candidates = Array.from(document.querySelectorAll(selector))
+		return candidates
+			.filter(isElementClickable)
+			.map(element => {
+				const point = findClickablePoint(element)
+				return point ? { element, point } : null
+			})
+			.filter(Boolean)
+	}
+
 	const toPageCoordinate = point => ({
 		x: Number(point.x.toFixed(2)),
 		y: Number((point.y + scrollTop).toFixed(2)),
 	})
 
-	const candidates = Array.from(document.querySelectorAll(selector))
-	const validElementsWithPoint = candidates
-		.filter(isElementClickable)
-		.map(element => {
-			const point = findClickablePoint(element)
-			if (!point) return null
-			return { element, point }
-		})
-		.filter(Boolean)
+	let reportKey = ''
+	let reportPosition = ''
+	const currentAction = ACTION_KEY[normalizeAction]
+	const currentSlide = currentAction ? currentAction.slide : ''
+	const currentPageFinish = currentAction ? currentAction.pageFinish : ''
 
-	if (validElementsWithPoint.length === 0) {
-		return {
-			action: normalizeAction,
-			selector,
-			elements: [],
-			randomElement: null,
-			randomCoordinate: null,
-			coordinate: '',
+	if (normalizeAction === 'CHECKPAGE') {
+		const matchedActionKeys = []
+		Object.keys(ACTION_KEY).forEach(actionKey => {
+			const actionConfig = ACTION_KEY[actionKey]
+			const selector = actionConfig && actionConfig.selector
+			const validElements = selector ? getValidElementsWithPointBySelector(selector) : []
+			if (validElements.length > 0) {
+				matchedActionKeys.push(actionKey)
+			}
+		})
+		reportKey = matchedActionKeys.join(',')
+	} else {
+		const selector = currentAction && currentAction.selector
+		if (selector) {
+			const validElementsWithPoint = getValidElementsWithPointBySelector(selector)
+			if (validElementsWithPoint.length > 0) {
+				const randomData = randomItem(validElementsWithPoint)
+				const randomCoordinate = toPageCoordinate(randomData.point)
+				reportPosition = `${randomCoordinate.x},${randomCoordinate.y}`
+			}
 		}
 	}
 
-	const randomData = randomItem(validElementsWithPoint)
-	const randomCoordinate = toPageCoordinate(randomData.point)
-	return {
-		action: normalizeAction,
-		selector,
-		elements: validElementsWithPoint.map(item => item.element),
-		randomElement: randomData.element,
-		randomCoordinate,
-		coordinate: `${randomCoordinate.x},${randomCoordinate.y}`,
+	reportClick(reportKey, reportPosition)
+
+	function reportClick(key = '', position = '') {
+		const jskey = normalizeAction.toLowerCase()
+		if (jskey === 'checkpage') {
+			JSBehavior.jsResult(jskey, key, '', '')
+		} else {
+			JSBehavior.jsResult(jskey, position, '', currentSlide, currentPageFinish)
+		}
 	}
 }
