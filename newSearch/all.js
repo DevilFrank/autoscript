@@ -1,11 +1,4 @@
 function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
-	// agreement - 欧洲协议弹窗
-	// click = 随机点击
-	// clickad - 点击广告
-	// search - 二次搜索
-	// secondpage - 二级页面
-	// associationsearch - 关联搜索
-	// checkpage - 检测可执行动作
 	const nowStep = step || '{step}'
 	let nextStep = ''
 	const ACTIONSJSON = `{
@@ -42,8 +35,8 @@ function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
     "slide": "false"
   }
 }`
+	// const ACTIONSJSON = `{config}`
 	const ACTION_KEY = JSON.parse(ACTIONSJSON)
-	console.log('Parsed ACTION_KEY:', ACTION_KEY)
 	const normalizeAction = String(jskey || '')
 		.trim()
 		.replace(/[\s_-]+/g, '')
@@ -89,11 +82,13 @@ function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
 	}
 
 	const isElementClickable = element => {
-		if (!element || !document.body.contains(element)) return false
+		if (!element || !element.isConnected) return false
 		if (element.disabled) return false
 		if (!hasVisibleStyle(element)) return false
+
 		const rect = element.getBoundingClientRect()
 		if (rect.width <= 0 || rect.height <= 0) return false
+
 		return isElementInDocumentRange(rect)
 	}
 
@@ -103,8 +98,47 @@ function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
 		return topElement === element || element.contains(topElement)
 	}
 
-	const getCandidatePoints = element => {
-		const rect = element.getBoundingClientRect()
+	const parsePseudoSelector = selector => {
+		const match = selector.match(/(::(?:before|after|first-line|first-letter|placeholder|marker))$/i)
+		if (match) {
+			return { baseSelector: selector.slice(0, match.index).trim() || '*', pseudo: match[1] }
+		}
+		return { baseSelector: selector, pseudo: null }
+	}
+
+	const getPseudoElementRect = (element, pseudo) => {
+		const style = window.getComputedStyle(element, pseudo)
+		if (style.display === 'none' || style.content === 'none' || style.content === 'normal') return null
+		const parentRect = element.getBoundingClientRect()
+		const w = parseFloat(style.width)
+		const h = parseFloat(style.height)
+		const effectiveWidth = w > 0 ? w : parentRect.width
+		const effectiveHeight = h > 0 ? h : parentRect.height
+		if (effectiveWidth <= 0 || effectiveHeight <= 0) return null
+		let top = parentRect.top
+		let left = parentRect.left
+		if (style.position === 'absolute' || style.position === 'fixed') {
+			const t = parseFloat(style.top)
+			const l = parseFloat(style.left)
+			const b = parseFloat(style.bottom)
+			const r = parseFloat(style.right)
+			if (!isNaN(t)) top = parentRect.top + t
+			else if (!isNaN(b)) top = parentRect.bottom - b - effectiveHeight
+			if (!isNaN(l)) left = parentRect.left + l
+			else if (!isNaN(r)) left = parentRect.right - r - effectiveWidth
+		}
+		return {
+			left,
+			top,
+			right: left + effectiveWidth,
+			bottom: top + effectiveHeight,
+			width: effectiveWidth,
+			height: effectiveHeight,
+		}
+	}
+
+	const getCandidatePoints = (element, rectOverride) => {
+		const rect = rectOverride || element.getBoundingClientRect()
 		if (!isElementInDocumentRange(rect)) return []
 
 		const innerLeft = rect.left + rect.width * 0.1
@@ -113,30 +147,20 @@ function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
 		const innerBottom = rect.bottom - rect.height * 0.1
 		const innerWidth = innerRight - innerLeft
 		const innerHeight = innerBottom - innerTop
-		const centerX = innerLeft + innerWidth / 2
-		const centerY = innerTop + innerHeight / 2
-		const quarterX = innerWidth * 0.25
-		const quarterY = innerHeight * 0.25
-		const randomCenterBiased = () => (Math.random() + Math.random() + Math.random()) / 3
-		const points = [
-			{ x: centerX, y: centerY },
-			{ x: centerX - quarterX, y: centerY - quarterY },
-			{ x: centerX + quarterX, y: centerY - quarterY },
-			{ x: centerX - quarterX, y: centerY + quarterY },
-			{ x: centerX + quarterX, y: centerY + quarterY },
-		]
+		if (innerWidth <= 0 || innerHeight <= 0) return []
 
-		for (let i = 0; i < 8; i++) {
+		const points = []
+		for (let i = 0; i < 13; i++) {
 			points.push({
-				x: innerLeft + randomCenterBiased() * innerWidth,
-				y: innerTop + randomCenterBiased() * innerHeight,
+				x: innerLeft + Math.random() * innerWidth,
+				y: innerTop + Math.random() * innerHeight,
 			})
 		}
 		return points
 	}
 
-	const findClickablePoint = element => {
-		const points = getCandidatePoints(element)
+	const findClickablePoint = (element, rectOverride) => {
+		const points = getCandidatePoints(element, rectOverride)
 		if (points.length === 0) return null
 		const isPointInViewport = point => point.x >= 0 && point.x <= viewportWidth && point.y >= 0 && point.y <= viewportHeight
 		let fallbackPoint = null
@@ -156,7 +180,19 @@ function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
 
 	const getValidElementsWithPointBySelector = selector => {
 		if (!selector) return []
-		const candidates = Array.from(document.querySelectorAll(selector))
+		const { baseSelector, pseudo } = parsePseudoSelector(selector)
+		const candidates = Array.from(document.querySelectorAll(baseSelector))
+		if (pseudo) {
+			return candidates
+				.filter(el => el && document.body.contains(el) && hasVisibleStyle(el))
+				.map(element => {
+					const pseudoRect = getPseudoElementRect(element, pseudo)
+					if (!pseudoRect) return null
+					const point = findClickablePoint(element, pseudoRect)
+					return point ? { element, point } : null
+				})
+				.filter(Boolean)
+		}
 		return candidates
 			.filter(isElementClickable)
 			.map(element => {
@@ -191,8 +227,8 @@ function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
 	}
 
 	const toPageCoordinate = point => ({
-		x: Number(point.x.toFixed(2)),
-		y: Number((point.y + (window.pageYOffset || document.documentElement.scrollTop || 0)).toFixed(2)),
+		x: point.x,
+		y: point.y + (window.pageYOffset || document.documentElement.scrollTop || 0),
 	})
 
 	let reportKey = ''
@@ -254,11 +290,18 @@ function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
 	function reportClick(key = '', position = '') {
 		const jskey = normalizeAction.toLowerCase()
 		if (jskey === 'checkpage') {
-			JSBehavior.jsResult(jskey, key, nextStep, '', behaviorsId)
+			JSBehavior.jsResult(jskey, key, nextStep, '', '', behaviorsId)
 		} else {
 			JSBehavior.jsResult(jskey, position, nextStep, currentSlide, currentPageFinish, behaviorsId)
 		}
 	}
 }
 
+// agreement - 欧洲协议弹窗
+// click = 随机点击
+// clickad - 点击广告
+// search - 二次搜索
+// secondpage - 二级页面
+// associationsearch - 关联搜索
+// checkpage - 检测可执行动作
 allACtion('{jskey}', '{searchText}', '{step}', '{behaviorsId}')
