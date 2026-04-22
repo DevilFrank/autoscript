@@ -18,7 +18,6 @@ function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
     "slide": "false"
   },
   "SEARCH": {
-    "selector": "span[class*='search']",
     "inputSelector": "input[type='text'], input[type='search']",
     "buttonSelector": "button[type='submit'], button[class*='search']",
     "pageFinish": "false",
