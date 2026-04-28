@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<title>all.js 移动端 SDK 测试页</title>
+
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+
+			html,
+			body {
+				width: 100%;
+				min-height: 100%;
+				margin: 0;
+				padding: 0;
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+				background: #f4f7fb;
+				color: #111827;
+			}
+
+			body {
+				padding-bottom: 88px;
+			}
+
+			a {
+				color: inherit;
+				text-decoration: none;
+			}
+
+			.mobile-page {
+				width: 100%;
+				max-width: 480px;
+				min-height: 100vh;
+				margin: 0 auto;
+				background: #ffffff;
+			}
+
+			.hero {
+				padding: 22px 16px 18px;
+				background: linear-gradient(135deg, #2563eb, #7c3aed);
+				color: #ffffff;
+			}
+
+			.hero-badge {
+				display: inline-flex;
+				align-items: center;
+				min-height: 26px;
+				padding: 0 10px;
+				border-radius: 999px;
+				background: rgba(255, 255, 255, 0.18);
+				font-size: 12px;
+			}
+
+			.hero h1 {
+				margin: 14px 0 8px;
+				font-size: 24px;
+				line-height: 1.25;
+			}
+
+			.hero p {
+				margin: 0;
+				font-size: 14px;
+				line-height: 1.7;
+				opacity: 0.92;
+			}
+
+			.section {
+				padding: 16px;
+				border-bottom: 10px solid #f4f7fb;
+			}
+
+			.section-title {
+				margin: 0 0 12px;
+				font-size: 18px;
+				line-height: 1.4;
+			}
+
+			.section-desc {
+				margin: 0 0 14px;
+				font-size: 13px;
+				line-height: 1.7;
+				color: #6b7280;
+			}
+
+			.cookie-consent,
+			.agreement-modal {
+				position: fixed;
+				left: 12px;
+				right: 12px;
+				bottom: 12px;
+				z-index: 20;
+				padding: 14px;
+				border-radius: 14px;
+				background: #111827;
+				color: #ffffff;
+				box-shadow: 0 12px 32px rgba(15, 23, 42, 0.24);
+			}
+
+			.cookie-consent strong {
+				display: block;
+				margin-bottom: 4px;
+				font-size: 15px;
+			}
+
+			.cookie-consent p {
+				margin: 0 0 10px;
+				font-size: 12px;
+				line-height: 1.6;
+				color: rgba(255, 255, 255, 0.82);
+			}
+
+			.agreement-confirm,
+			.cookie-accept-btn {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 100%;
+				min-height: 42px;
+				border-radius: 10px;
+				background: #f59e0b;
+				color: #111827;
+				font-weight: 700;
+				cursor: pointer;
+			}
+
+			.search-area {
+				display: flex;
+				gap: 8px;
+				width: 100%;
+			}
+
+			.search-area input {
+				flex: 1;
+				min-width: 0;
+				height: 44px;
+				padding: 0 12px;
+				border: 1px solid #d1d5db;
+				border-radius: 10px;
+				font-size: 15px;
+			}
+
+			.search-area button {
+				width: 84px;
+				height: 44px;
+				border: 0;
+				border-radius: 10px;
+				background: #2563eb;
+				color: #ffffff;
+				font-weight: 700;
+				font-size: 15px;
+				cursor: pointer;
+			}
+
+			.action-list {
+				display: grid;
+				gap: 10px;
+			}
+
+			.click-box,
+			.btn-gesture,
+			.btn-guide,
+			.associationsearch-card,
+			.second-page-card {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				width: 100%;
+				min-height: 52px;
+				padding: 0 14px;
+				border-radius: 12px;
+				font-size: 15px;
+				font-weight: 700;
+				cursor: pointer;
+			}
+
+			.click-box {
+				background: #dcfce7;
+				color: #166534;
+			}
+
+			.btn-guide {
+				background: #fee2e2;
+				color: #b91c1c;
+			}
+
+			.second-page-card,
+			.btn-gesture {
+				background: #e0f2fe;
+				color: #0369a1;
+			}
+
+			.associationsearch-card {
+				background: #ede9fe;
+				color: #5b21b6;
+			}
+
+			.lead-form {
+				padding: 14px;
+				border: 1px solid #dbeafe;
+				border-radius: 14px;
+				background: #f8fbff;
+			}
+
+			.lead-form h3 {
+				margin: 0 0 6px;
+				font-size: 17px;
+			}
+
+			.lead-form p {
+				margin: 0 0 14px;
+				font-size: 13px;
+				line-height: 1.6;
+				color: #6b7280;
+			}
+
+			.form-row {
+				margin-bottom: 12px;
+			}
+
+			.form-row label {
+				display: block;
+				margin-bottom: 5px;
+				font-size: 13px;
+				color: #374151;
+			}
+
+			.form-row input,
+			.form-row select,
+			.form-row textarea {
+				width: 100%;
+				height: 44px;
+				padding: 0 12px;
+				border: 1px solid #d1d5db;
+				border-radius: 10px;
+				background: #ffffff;
+				font-size: 15px;
+			}
+
+			.lead-form button,
+			.download-btn,
+			.phone-link,
+			.contact-btn,
+			.register-btn,
+			.quote-btn,
+			.continue-btn {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 100%;
+				min-height: 48px;
+				padding: 0 16px;
+				border: 0;
+				border-radius: 12px;
+				color: #ffffff;
+				font-weight: 700;
+				font-size: 15px;
+				text-decoration: none;
+				cursor: pointer;
+			}
+
+			.lead-form button {
+				background: #16a34a;
+			}
+
+			.download-btn {
+				background: #7c3aed;
+			}
+
+			.phone-link {
+				background: #f97316;
+			}
+
+			.contact-btn {
+				background: #0891b2;
+			}
+
+			.register-btn {
+				background: #db2777;
+			}
+
+			.quote-btn {
+				background: #ea580c;
+			}
+
+			.continue-btn {
+				background: #4f46e5;
+			}
+
+			.conversion-list {
+				display: grid;
+				gap: 12px;
+			}
+
+			.conversion-card {
+				padding: 14px;
+				border-radius: 14px;
+				background: #f9fafb;
+				border: 1px solid #e5e7eb;
+			}
+
+			.conversion-card h3 {
+				margin: 0 0 6px;
+				font-size: 16px;
+			}
+
+			.conversion-card p {
+				margin: 0 0 12px;
+				font-size: 13px;
+				line-height: 1.6;
+				color: #6b7280;
+			}
+
+			.sdk-log {
+				display: none;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="mobile-page">
+			<header class="hero">
+				<div class="hero-badge">Mobile Landing Page</div>
+				<h1>all.js SDK 移动端测试落地页</h1>
+				<p>页面只保留可识别目标元素，用于嵌入 SDK 后测试动作识别、坐标返回和转化链路。</p>
+			</header>
+
+			<section class="section search-section">
+				<h2 class="section-title">二次搜索</h2>
+				<p class="section-desc">用于测试 search：先识别输入框，再输入关键词并识别搜索按钮。</p>
+				<div class="search-area">
+					<input type="search" name="q" placeholder="Search products" autocomplete="off" />
+					<button type="submit" class="search-button">Search</button>
+				</div>
+			</section>
+
+			<section class="section action-section">
+				<h2 class="section-title">基础动作目标</h2>
+				<div class="action-list">
+					<div class="click-box" data-action="random-click">Random Click Target <span>›</span></div>
+					<a class="btn-gesture btn-guide" href="javascript:void(0)" data-action="click-ad">Ad Guide Button <span>›</span></a>
+					<a class="btn-gesture second-page-card" href="javascript:void(0)" data-action="second-page">Open Second Page <span>›</span></a>
+					<div class="associationsearch-card" data-action="association-search">Related search: best iphone deals <span>›</span></div>
+				</div>
+			</section>
+
+			<section class="section ad-effect-section">
+				<h2 class="section-title">转化表单</h2>
+				<p class="section-desc">用于测试 adeffect 表单识别、字段顺序填写和提交按钮识别。</p>
+
+				<form class="lead-form signup-form register-form quote-form" id="leadForm">
+					<h3>Get Quote Form</h3>
+					<p>Submit your information to get started.</p>
+
+					<div class="form-row">
+						<label for="fullName">Full Name</label>
+						<input id="fullName" name="fullName" type="text" placeholder="Full Name" autocomplete="name" required />
+					</div>
+
+					<div class="form-row">
+						<label for="age">Age</label>
+						<input id="age" name="age" type="number" inputmode="numeric" placeholder="Age" required />
+					</div>
+
+					<div class="form-row">
+						<label for="telephone">Phone Number</label>
+						<input id="telephone" name="telephone" type="tel" placeholder="Phone Number" autocomplete="tel" required />
+					</div>
+
+					<div class="form-row">
+						<label for="temporaryMail">Email Address</label>
+						<input id="temporaryMail" name="temporaryMail" type="email" placeholder="Email Address" autocomplete="email" />
+					</div>
+
+					<div class="form-row">
+						<label for="address">Street Address</label>
+						<input id="address" name="address" type="text" placeholder="Street Address" />
+					</div>
+
+					<div class="form-row">
+						<label for="city">City</label>
+						<input id="city" name="city" type="text" placeholder="City" />
+					</div>
+
+					<div class="form-row">
+						<label for="state">State</label>
+						<input id="state" name="state" type="text" placeholder="State" />
+					</div>
+
+					<div class="form-row">
+						<label for="zipCode">Zip Code</label>
+						<input id="zipCode" name="zipCode" type="text" placeholder="Zip Code" />
+					</div>
+
+					<div class="form-row">
+						<label for="birthday">Birthday</label>
+						<input id="birthday" name="birthday" type="text" placeholder="Birthday" />
+					</div>
+
+					<div class="form-row">
+						<label for="gender">Gender</label>
+						<select id="gender" name="gender">
+							<option value="">Please select</option>
+							<option>Female</option>
+							<option>Male</option>
+						</select>
+					</div>
+
+					<div class="form-row">
+						<label for="companyName">Company Name</label>
+						<input id="companyName" name="companyName" type="text" placeholder="Company Name" />
+					</div>
+
+					<div class="form-row">
+						<label for="occupation">Occupation</label>
+						<input id="occupation" name="occupation" type="text" placeholder="Occupation" />
+					</div>
+
+					<div class="form-row">
+						<label for="monthlySalary">Monthly Salary</label>
+						<input id="monthlySalary" name="monthlySalary" type="text" placeholder="Monthly Income" />
+					</div>
+
+					<div class="form-row">
+						<label for="employmentStatus">Employment Status</label>
+						<input id="employmentStatus" name="employmentStatus" type="text" placeholder="Employment Status" />
+					</div>
+
+					<button type="submit" class="submit-btn">Submit</button>
+				</form>
+			</section>
+
+			<section class="section conversion-section">
+				<h2 class="section-title">其他转化入口</h2>
+				<p class="section-desc">用于测试 adeffect 在非表单场景下的下载、电话、客服、注册、报价和继续按钮识别。</p>
+
+				<div class="conversion-list">
+					<section class="conversion-card download-area">
+						<h3>Download App</h3>
+						<p>Install our app to continue.</p>
+						<a class="download-btn" href="/demo-app.apk" download>Download App</a>
+					</section>
+
+					<section class="conversion-card phone-area">
+						<h3>Call Now</h3>
+						<p>Talk to our service team.</p>
+						<a class="phone-link" href="tel:+16146702062">Call Now: +1 614-670-2062</a>
+					</section>
+
+					<section class="conversion-card contact-area">
+						<h3>Customer Support</h3>
+						<p>Need help? Contact customer support.</p>
+						<button class="contact-btn" type="button">Contact Customer Service</button>
+					</section>
+
+					<section class="conversion-card register-area">
+						<h3>Create Account</h3>
+						<p>Register to get your account.</p>
+						<button class="register-btn" type="button">Register</button>
+					</section>
+
+					<section class="conversion-card quote-area">
+						<h3>Insurance Quote</h3>
+						<p>Get your quote in minutes.</p>
+						<button class="quote-btn" type="button">Get Quote</button>
+					</section>
+
+					<section class="conversion-card continue-area">
+						<h3>Continue Application</h3>
+						<p>Continue now to see your results.</p>
+						<button class="continue-btn" type="button">Continue</button>
+					</section>
+				</div>
+			</section>
+		</div>
+
+		<div class="cookie-consent agreement-modal" role="dialog" aria-label="Cookie Agreement">
+			<strong>Cookie Agreement</strong>
+			<p>We use cookies to improve your experience. Please accept the agreement.</p>
+			<div class="agreement-confirm cookie-accept-btn">Accept Agreement</div>
+		</div>
+
+		<div id="sdkLog" class="sdk-log"></div>
+
+		<script>
+			window.__lastJsResult = null
+
+			window.JSBehavior = window.JSBehavior || {
+				jsResult: function (key, position, nextStep, slide, pageFinish, behaviorsId) {
+					window.__lastJsResult = {
+						key,
+						position,
+						nextStep,
+						slide,
+						pageFinish,
+						behaviorsId,
+						time: new Date().toLocaleString(),
+					}
+
+					const log = document.getElementById('sdkLog')
+					if (log) {
+						log.textContent = JSON.stringify(window.__lastJsResult)
+					}
+				},
+			}
+
+			document.addEventListener('submit', function (event) {
+				event.preventDefault()
+			})
+		</script>
+
+		<script src="./all.js"></script>
+	</body>
+</html>

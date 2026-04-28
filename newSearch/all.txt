@@ -62,7 +62,7 @@ var ADS_FORM_STEPS = [
 	'monthlySalary',
 	'employmentStatus',
 ]
-var ADS_FORM_DATA_URL = 'http://adcenter.airmobyte.com/prod-api/common/getFormDataInfo?countryCode='
+var ADS_FORM_DATA_URL = `http://adcenter.airmobyte.com/prod-api/common/getFormDataInfo?countryCode=US`
 var ADS_FIELD_ALIASES = {
 	fullName: ['name', 'full name', 'fullname', 'first name', 'last name', 'your name', '姓名', 'nombre', 'contact name'],
 	age: ['age', 'years old', 'edad', '年龄'],
@@ -407,7 +407,6 @@ var normalizeAdEffectPerson = rawPerson => ({
 	temporaryMail: rawPerson.temporaryMail || '',
 })
 var fetchAdEffectPerson = async () => {
-	console.log('Fetching ad effect person data from:', ADS_FORM_DATA_URL)
 	const response = await fetch(ADS_FORM_DATA_URL)
 	const result = await response.json()
 	const list = result && Array.isArray(result.data) ? result.data : []
@@ -429,10 +428,7 @@ var getAdEffectPerson = async behaviorsId => {
 	return state.person
 }
 
-async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '', countryCode = 'US') {
-	if (countryCode !== '') {
-		ADS_FORM_DATA_URL = ADS_FORM_DATA_URL + countryCode
-	}
+async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '') {
 	const nowStep = step || '{step}'
 	let nextStep = ''
 	const ACTIONSJSON = `{
@@ -463,7 +459,6 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
       "slide": "false"
     }
   }`
-	// const ACTIONSJSON = `{config}`
 	const ACTION_KEY = JSON.parse(ACTIONSJSON)
 	const normalizeAction = String(jskey || '')
 		.trim()
@@ -781,13 +776,3 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 		}
 	}
 }
-
-// agreement - 欧洲协议弹窗
-// click = 随机点击
-// clickad - 点击广告
-// search - 二次搜索
-// secondpage - 二级页面
-// associationsearch - 关联搜索
-// checkpage - 检测可执行动作
-// adeffect - 转化
-// allACtion('{jskey}', '{searchText}', '{step}', '{behaviorsId}','{countryCode}')
