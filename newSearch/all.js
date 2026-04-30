@@ -687,7 +687,19 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 		candidate && candidate.formFields ? candidate.formFields.find(field => field.step === stepName) : null
 	const fillAdEffectFormField = (field, formPerson) => {
 		if (!field) return
-		typeTextLikeKeyboard(field.element, formPerson[field.step] == null ? '' : formPerson[field.step])
+		const element = field.element
+		if (element && String(element.tagName || '').toLowerCase() === 'select') {
+			const options = Array.from(element.options || [])
+			const lastOption = options[options.length - 1]
+			if (!lastOption) return
+			element.focus()
+			element.value = lastOption.value
+			element.selectedIndex = options.length - 1
+			element.dispatchEvent(new Event('input', { bubbles: true }))
+			element.dispatchEvent(new Event('change', { bubbles: true }))
+			return
+		}
+		typeTextLikeKeyboard(element, formPerson[field.step] == null ? '' : formPerson[field.step])
 	}
 
 	if (normalizeAction === 'ADEFFECT') {
