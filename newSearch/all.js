@@ -707,6 +707,15 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 		typeTextLikeKeyboard(element, formPerson[field.step] == null ? '' : formPerson[field.step])
 	}
 
+	const shouldSkipInterstitialGuard = normalizeAction === 'CHECKPAGE' || normalizeAction === 'INTERSTITIAL'
+	if (!shouldSkipInterstitialGuard && ACTION_KEY.INTERSTITIAL && ACTION_KEY.INTERSTITIAL.selector) {
+		const interstitialElements = getValidElementsWithPointBySelector(ACTION_KEY.INTERSTITIAL.selector)
+		if (interstitialElements.length > 0) {
+			JSBehavior.jsResult('irregularinter', '', '', '', '', behaviorsId)
+			return
+		}
+	}
+
 	if (normalizeAction === 'ADEFFECT') {
 		const recognition = getAdEffectRecognition()
 		const formCandidate = findAdEffectFormCandidate(recognition, behaviorsId)
