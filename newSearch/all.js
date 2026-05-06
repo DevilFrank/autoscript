@@ -461,6 +461,11 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
       "selector": "div.associationsearch-card",
       "pageFinish": "false",
       "slide": "false"
+    },
+    "INTERSTITIAL": {
+      "selector": "html>ins[id^='gpt_unit_'][style*='height: 100vh'] iframe[id^='google_ads_iframe_']",
+      "pageFinish": true,
+      "slide": false
     }
   }`
 	// const ACTIONSJSON = `{config}`
@@ -801,5 +806,6 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 // secondpage - 二级页面
 // associationsearch - 关联搜索
 // checkpage - 检测可执行动作
+// interstitial - 插屏广告
 // adeffect - 转化
 // allACtion('{jskey}', '{searchText}', '{step}', '{behaviorsId}','{countryCode}')
