@@ -316,6 +316,39 @@
 			.sdk-log {
 				display: none;
 			}
+
+			.inter {
+				display: none;
+				align-items: center;
+				justify-content: center;
+				width: 100%;
+				height: 100%;
+				max-width: 480px;
+				min-height: 100vh;
+				background-color: rgba(15, 23, 42, 0.44);
+				position: fixed;
+				top: 0%;
+				left: 0%;
+				z-index: 30;
+				padding: 60px;
+			}
+			.inter.is-visible {
+				display: flex;
+			}
+			.inter-close {
+				position: absolute;
+				top: 0;
+				right: 0;
+				width: 50px;
+				height: 50px;
+				background-color: #b91c1c;
+				cursor: pointer;
+			}
+			.inter-main {
+				width: 100%;
+				height: 100%;
+				background-color: #f59e0b;
+			}
 		</style>
 	</head>
 
@@ -483,34 +516,75 @@
 		</div>
 
 		<div id="sdkLog" class="sdk-log"></div>
-
+		<div class="inter">
+			<div class="inter-close"></div>
+			<div class="inter-main"></div>
+		</div>
 		<script>
-			window.__lastJsResult = null
-
-			window.JSBehavior = window.JSBehavior || {
-				jsResult: function (key, position, nextStep, slide, pageFinish, behaviorsId) {
-					window.__lastJsResult = {
-						key,
-						position,
-						nextStep,
-						slide,
-						pageFinish,
-						behaviorsId,
-						time: new Date().toLocaleString(),
-					}
-
-					const log = document.getElementById('sdkLog')
-					if (log) {
-						log.textContent = JSON.stringify(window.__lastJsResult)
-					}
-				},
-			}
-
 			document.addEventListener('submit', function (event) {
 				event.preventDefault()
 			})
-		</script>
+			;(function () {
+				const inter = document.querySelector('.inter')
+				const interClose = document.querySelector('.inter-close')
+				const secondPageCard = document.querySelector('a.second-page-card')
+				const idleDelay = 10000
+				let hasShownBySecondPageClick = false
+				let hasShownByScroll = false
+				let hasShownByIdle = false
+				let idleTimer = null
 
-		<script src="./all.js"></script>
+				function showInter() {
+					if (!inter) return
+					inter.classList.add('is-visible')
+				}
+
+				function hideInter() {
+					if (!inter) return
+					inter.classList.remove('is-visible')
+					resetIdleTimer()
+				}
+
+				function resetIdleTimer() {
+					if (hasShownByIdle) return
+					window.clearTimeout(idleTimer)
+					idleTimer = window.setTimeout(function () {
+						hasShownByIdle = true
+						showInter()
+					}, idleDelay)
+				}
+
+				if (secondPageCard) {
+					secondPageCard.addEventListener('click', function () {
+						if (hasShownBySecondPageClick) return
+						hasShownBySecondPageClick = true
+						showInter()
+					})
+				}
+
+				window.addEventListener(
+					'scroll',
+					function () {
+						resetIdleTimer()
+						if (hasShownByScroll || window.scrollY <= 500) return
+						hasShownByScroll = true
+						showInter()
+					},
+					{ passive: true },
+				)
+				;['click', 'keydown', 'touchstart', 'touchmove', 'mousemove', 'wheel'].forEach(function (eventName) {
+					document.addEventListener(eventName, resetIdleTimer, { passive: true })
+				})
+
+				if (interClose) {
+					interClose.addEventListener('click', function (event) {
+						event.stopPropagation()
+						hideInter()
+					})
+				}
+
+				resetIdleTimer()
+			})()
+		</script>
 	</body>
 </html>

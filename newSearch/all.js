@@ -431,7 +431,7 @@ var getAdEffectPerson = async behaviorsId => {
 
 async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '', countryCode = 'US') {
 	if (countryCode !== '') {
-		ADS_FORM_DATA_URL = ADS_FORM_DATA_URL + countryCode
+		ADS_FORM_DATA_URL = `${ADS_FORM_DATA_URL}${countryCode || ''}`
 	}
 	const nowStep = step || '{step}'
 	let nextStep = ''
@@ -463,8 +463,13 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
       "slide": "false"
     },
     "INTERSTITIAL": {
-      "selector": "html>ins[id^='gpt_unit_'][style*='height: 100vh'] iframe[id^='google_ads_iframe_']",
+      "selector": "div.inter div.inter-main",
       "pageFinish": true,
+      "slide": false
+    },
+    "INTERSTITIALCLOSE":{
+      "selector": "div.inter div.inter-close",
+      "pageFinish": false,
       "slide": false
     }
   }`
@@ -707,11 +712,12 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 		typeTextLikeKeyboard(element, formPerson[field.step] == null ? '' : formPerson[field.step])
 	}
 
-	const shouldSkipInterstitialGuard = normalizeAction === 'CHECKPAGE' || normalizeAction === 'INTERSTITIAL'
+	const shouldSkipInterstitialGuard =
+		normalizeAction === 'CHECKPAGE' || normalizeAction === 'INTERSTITIAL' || normalizeAction === 'INTERSTITIALCLOSE'
 	if (!shouldSkipInterstitialGuard && ACTION_KEY.INTERSTITIAL && ACTION_KEY.INTERSTITIAL.selector) {
 		const interstitialElements = getValidElementsWithPointBySelector(ACTION_KEY.INTERSTITIAL.selector)
 		if (interstitialElements.length > 0) {
-			JSBehavior.jsResult('irregularinter', '', '', '', '', behaviorsId)
+			JSBehavior.jsResult(normalizeAction.toLowerCase(), '', 'irregularinter', '', '', behaviorsId)
 			return
 		}
 	}
@@ -760,7 +766,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 			}
 		})
 		if (hasAdEffectTarget(getAdEffectRecognition())) {
-			matchedActionKeys.push('adEffect')
+			matchedActionKeys.push('adeffect')
 		}
 		reportKey = matchedActionKeys.join(',')
 	} else if (normalizeAction === 'SEARCH') {
