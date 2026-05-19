@@ -435,45 +435,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	}
 	const nowStep = step || '{step}'
 	let nextStep = ''
-	const ACTIONSJSON = `{
-    "AGREEMENT": {
-      "selector": "div.agreement-confirm.cookie-accept-btn",
-      "pageFinish": "false",
-      "slide": "false"
-    },
-    "CLICKAD": {
-      "selector": "a.btn-gesture.btn-guide",
-      "pageFinish": "false",
-      "slide": "false"
-    },
-    "SEARCH": {
-      "inputSelector": "div.search-area input",
-      "buttonSelector": "button.search-button",
-      "pageFinish": "false",
-      "slide": "false"
-    },
-    "SECONDPAGE": {
-      "selector": "a.btn-gesture.second-page-card",
-      "pageFinish": "false",
-      "slide": "false"
-    },
-    "ASSOCIATIONSEARCH": {
-      "selector": "div.associationsearch-card",
-      "pageFinish": "false",
-      "slide": "false"
-    },
-    "INTERSTITIAL": {
-      "selector": "div.inter div.inter-main",
-      "pageFinish": true,
-      "slide": false
-    },
-    "INTERSTITIALCLOSE":{
-      "selector": "div.inter div.inter-close",
-      "pageFinish": false,
-      "slide": false
-    }
-  }`
-	// const ACTIONSJSON = `{config}`
+	const ACTIONSJSON = `{config}`
 	const ACTION_KEY = JSON.parse(ACTIONSJSON)
 	const normalizeAction = String(jskey || '')
 		.trim()
@@ -482,9 +444,13 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 
 	const viewportWidth = window.innerWidth || document.documentElement.clientWidth
 	const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+	const currentAction = ACTION_KEY[normalizeAction]
+	const currentSlide = currentAction ? currentAction.slide : ''
+	const currentPageFinish = currentAction ? currentAction.pageFinish : ''
 
 	const randomItem = list => list[Math.floor(Math.random() * list.length)]
 	const clamp = (value, min, max) => Math.max(min, Math.min(value, max))
+	const isCurrentSlide = () => currentSlide === true || String(currentSlide).toLowerCase() === 'true'
 
 	const getDocumentBounds = () => {
 		const doc = document.documentElement
@@ -578,6 +544,12 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	const getCandidatePoints = (element, rectOverride) => {
 		const rect = rectOverride || element.getBoundingClientRect()
 		if (!isElementInDocumentRange(rect)) return []
+		const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0
+		const createPoint = (x, viewportY) => ({
+			x,
+			y: isCurrentSlide() ? viewportY + scrollTop : viewportY,
+			_viewportY: viewportY,
+		})
 
 		const innerLeft = rect.left + rect.width * 0.1
 		const innerRight = rect.right - rect.width * 0.1
@@ -589,10 +561,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 
 		const points = []
 		for (let i = 0; i < 13; i++) {
-			points.push({
-				x: innerLeft + Math.random() * innerWidth,
-				y: innerTop + Math.random() * innerHeight,
-			})
+			points.push(createPoint(innerLeft + Math.random() * innerWidth, innerTop + Math.random() * innerHeight))
 		}
 		return points
 	}
@@ -600,7 +569,9 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	const findClickablePoint = (element, rectOverride) => {
 		const points = getCandidatePoints(element, rectOverride)
 		if (points.length === 0) return null
-		const isPointInViewport = point => point.x >= 0 && point.x <= viewportWidth && point.y >= 0 && point.y <= viewportHeight
+		const getPointViewportY = point => (point && point._viewportY !== undefined ? point._viewportY : point.y)
+		const isPointInViewport = point =>
+			point.x >= 0 && point.x <= viewportWidth && getPointViewportY(point) >= 0 && getPointViewportY(point) <= viewportHeight
 		let fallbackPoint = null
 
 		for (let i = 0; i < points.length; i++) {
@@ -609,7 +580,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 				if (!fallbackPoint) fallbackPoint = point
 				continue
 			}
-			if (pointHitsElement(element, point.x, point.y)) {
+			if (pointHitsElement(element, point.x, getPointViewportY(point))) {
 				return point
 			}
 		}
@@ -666,14 +637,11 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 
 	const toPageCoordinate = point => ({
 		x: point.x,
-		y: point.y + (window.pageYOffset || document.documentElement.scrollTop || 0),
+		y: point.y,
 	})
 
 	let reportKey = ''
 	let reportPosition = ''
-	const currentAction = ACTION_KEY[normalizeAction]
-	const currentSlide = currentAction ? currentAction.slide : ''
-	const currentPageFinish = currentAction ? currentAction.pageFinish : ''
 	const getAdEffectRecognition = () => (typeof recognizeAdsLandingPage === 'function' ? recognizeAdsLandingPage() : null)
 	const hasAdEffectTarget = recognition =>
 		Boolean(
@@ -824,3 +792,4 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 // interstitial - 插屏广告
 // adeffect - 转化
 // allACtion('{jskey}', '{searchText}', '{step}', '{behaviorsId}','{countryCode}')
+allACtion('{jskey}', '{searchText}', '{step}', '{behaviorsId}')
