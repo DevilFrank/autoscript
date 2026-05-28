@@ -652,6 +652,55 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 						recognition.fallbackTargets.phoneLink ||
 						recognition.fallbackTargets.contactButton))),
 		)
+	const getAdEffectElementName = element =>
+		adsNormalizeSpace(
+			[
+				element && element.getAttribute && element.getAttribute('name'),
+				element && element.id,
+				element && element.getAttribute && element.getAttribute('aria-label'),
+				element && element.getAttribute && element.getAttribute('title'),
+				element && element.className,
+				element && element.tagName,
+			].find(Boolean) || '',
+		)
+	const getAdEffectElementContent = element =>
+		adsNormalizeSpace((element && (element.textContent || element.value || (element.getAttribute && element.getAttribute('href')))) || '')
+	const getAdEffectTrackInfo = recognition => {
+		if (!recognition) return null
+		const formCandidate =
+			recognition.bestCandidate || (recognition.candidates && recognition.candidates.length > 0 ? recognition.candidates[0] : null)
+		if (formCandidate && formCandidate.element) {
+			return {
+				type: '表单',
+				element: formCandidate.element,
+			}
+		}
+		const preferredTarget = recognition.preferredTarget
+		if (preferredTarget && preferredTarget.target && preferredTarget.target.element) {
+			const typeMap = {
+				'download-button': '下载按钮',
+				'phone-link': '电话a标签',
+				'contact-button': '客服按钮',
+			}
+			return {
+				type: typeMap[preferredTarget.type] || '',
+				element: preferredTarget.target.element,
+			}
+		}
+		return null
+	}
+	const reportAdEffectTrack = (recognition, trackType) => {
+		const trackInfo = getAdEffectTrackInfo(recognition)
+		if (!trackInfo || !trackInfo.type || !trackInfo.element) return
+		const data = JSON.stringify({
+			type: trackInfo.type,
+			elementName: getAdEffectElementName(trackInfo.element),
+			elementContent: getAdEffectElementContent(trackInfo.element),
+		})
+		try {
+			JSBehavior.dotrack(trackType, data)
+		} catch (error) {}
+	}
 	const getPointPosition = element => {
 		const point = findClickablePoint(element)
 		if (!point) return ''
@@ -711,11 +760,13 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 				return
 			}
 
+			reportAdEffectTrack({ bestCandidate: formCandidate }, '4')
 			reportAdEffect(getPointPosition(formCandidate.submitButton.element), '')
 			return
 		}
 
 		if (preferredTarget && preferredTarget.target && preferredTarget.target.element) {
+			reportAdEffectTrack({ preferredTarget }, '4')
 			reportAdEffect(getPointPosition(preferredTarget.target.element), '')
 		}
 		return
@@ -733,8 +784,10 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 				matchedActionKeys.push(actionKey.toLowerCase())
 			}
 		})
-		if (hasAdEffectTarget(getAdEffectRecognition())) {
-			matchedActionKeys.push('adeffect')
+		const adEffectRecognition = getAdEffectRecognition()
+		if (hasAdEffectTarget(adEffectRecognition)) {
+			if (!matchedActionKeys.includes('adeffect')) matchedActionKeys.push('adeffect')
+			reportAdEffectTrack(adEffectRecognition, '5')
 		}
 		reportKey = matchedActionKeys.join(',')
 	} else if (normalizeAction === 'SEARCH') {
