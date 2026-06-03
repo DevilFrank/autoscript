@@ -708,10 +708,14 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	const reportAdEffectTrack = (recognition, trackType) => {
 		const trackInfo = getAdEffectTrackInfo(recognition)
 		if (!trackInfo || !trackInfo.type || !trackInfo.element) return
+		//屏幕分辨率
+		const screenWidth = window.screen.width || 0
+		const screenHeight = window.screen.height || 0
 		const data = JSON.stringify({
 			type: trackInfo.type,
 			elementName: getAdEffectElementName(trackInfo.element),
 			elementContent: getAdEffectElementContent(trackInfo.element),
+			screenResolution: `${screenWidth}x${screenHeight}`,
 		})
 		try {
 			JSBehavior.dotrack(trackType, data)
