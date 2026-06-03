@@ -62,7 +62,7 @@ var ADS_FORM_STEPS = [
 	'monthlySalary',
 	'employmentStatus',
 ]
-var ADS_FORM_DATA_URL = 'http://adcenter.airmobyte.com/prod-api/common/getFormDataInfo?countryCode='
+var ADS_FORM_DATA_BASE_URL = 'http://adcenter.airmobyte.com/prod-api/common/getFormDataInfo?countryCode='
 var ADS_FIELD_ALIASES = {
 	fullName: ['name', 'full name', 'fullname', 'first name', 'last name', 'your name', '姓名', 'nombre', 'contact name'],
 	age: ['age', 'years old', 'edad', '年龄'],
@@ -406,20 +406,21 @@ var normalizeAdEffectPerson = rawPerson => ({
 	telephone: rawPerson.telephone || '',
 	temporaryMail: rawPerson.temporaryMail || '',
 })
-var fetchAdEffectPerson = async () => {
-	const response = await fetch(ADS_FORM_DATA_URL)
+var getAdEffectFormDataUrl = countryCode => `${ADS_FORM_DATA_BASE_URL}${encodeURIComponent(countryCode || '')}`
+var fetchAdEffectPerson = async countryCode => {
+	const response = await fetch(getAdEffectFormDataUrl(countryCode))
 	const result = await response.json()
 	const list = result && Array.isArray(result.data) ? result.data : []
 	if (!list.length) return ADS_FALLBACK_PERSION
 	return normalizeAdEffectPerson(list[Math.floor(Math.random() * list.length)])
 }
-var getAdEffectPerson = async behaviorsId => {
+var getAdEffectPerson = async (behaviorsId, countryCode) => {
 	const store = getAdEffectStateStore()
 	const stateKey = getAdEffectStateKey(behaviorsId)
 	const state = store[stateKey] || {}
 	if (state.person) return state.person
 	try {
-		state.person = await fetchAdEffectPerson()
+		state.person = await fetchAdEffectPerson(countryCode)
 	} catch (error) {
 		state.person = ADS_FALLBACK_PERSION
 	}
@@ -429,9 +430,6 @@ var getAdEffectPerson = async behaviorsId => {
 }
 
 async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '', countryCode = 'US') {
-	if (countryCode !== '') {
-		ADS_FORM_DATA_URL = `${ADS_FORM_DATA_URL}${countryCode || ''}`
-	}
 	const nowStep = step || '{step}'
 	let nextStep = ''
 	const ACTIONSJSON = `{config}`
@@ -545,30 +543,26 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	const getCandidatePoints = (element, rectOverride) => {
 		const rect = rectOverride || element.getBoundingClientRect()
 		if (!isElementInDocumentRange(rect)) return []
-		const { height: docHeight, scrollTop } = getDocumentBounds()
-		const createPoint = (x, y) => ({
-			x,
-			y,
-			_viewportY: isCurrentSlide() ? y - scrollTop : y,
-		})
 
 		const innerLeft = rect.left + rect.width * 0.2
 		const innerRight = rect.right - rect.width * 0.2
-		const innerViewportTop = rect.top + rect.height * 0.25
-		const innerViewportBottom = rect.bottom - rect.height * 0.25
-		const innerTop = isCurrentSlide() ? innerViewportTop + scrollTop : innerViewportTop
-		const innerBottom = isCurrentSlide() ? innerViewportBottom + scrollTop : innerViewportBottom
+		const innerTop = rect.top + rect.height * 0.2
+		const innerBottom = rect.bottom - rect.height * 0.2
+
 		const pointLeft = clamp(innerLeft, 0, maxViewportX)
 		const pointRight = clamp(innerRight, 0, maxViewportX)
-		const pointTop = isCurrentSlide() ? clamp(innerTop, 0, Math.max(0, docHeight - 1)) : clamp(innerTop, 0, maxViewportY)
-		const pointBottom = isCurrentSlide() ? clamp(innerBottom, 0, Math.max(0, docHeight - 1)) : clamp(innerBottom, 0, maxViewportY)
+		const pointTop = clamp(innerTop, 0, maxViewportY)
+		const pointBottom = clamp(innerBottom, 0, maxViewportY)
 		const innerWidth = pointRight - pointLeft
 		const innerHeight = pointBottom - pointTop
 		if (innerWidth <= 0 || innerHeight <= 0) return []
 
 		const points = []
 		for (let i = 0; i < 13; i++) {
-			points.push(createPoint(pointLeft + Math.random() * innerWidth, pointTop + Math.random() * innerHeight))
+			points.push({
+				x: pointLeft + Math.random() * innerWidth,
+				y: pointTop + Math.random() * innerHeight,
+			})
 		}
 		return points
 	}
@@ -576,9 +570,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	const findClickablePoint = (element, rectOverride) => {
 		const points = getCandidatePoints(element, rectOverride)
 		if (points.length === 0) return null
-		const getPointViewportY = point => (point && point._viewportY !== undefined ? point._viewportY : point.y)
-		const isPointInViewport = point =>
-			point.x >= 0 && point.x <= maxViewportX && getPointViewportY(point) >= 0 && getPointViewportY(point) <= maxViewportY
+		const isPointInViewport = point => point.x >= 0 && point.x <= maxViewportX && point.y >= 0 && point.y <= maxViewportY
 
 		for (let i = 0; i < points.length; i++) {
 			const point = points[i]
@@ -586,7 +578,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 				if (isCurrentSlide()) return point
 				continue
 			}
-			if (pointHitsElement(element, point.x, getPointViewportY(point))) {
+			if (pointHitsElement(element, point.x, point.y)) {
 				return point
 			}
 		}
@@ -642,17 +634,16 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	}
 
 	const toPageCoordinate = point => {
-		const { width: docWidth, height: docHeight, scrollLeft } = getDocumentBounds()
-		const viewportY = point && point._viewportY !== undefined ? point._viewportY : point.y
+		const { width: docWidth, height: docHeight, scrollTop } = getDocumentBounds()
 		if (!isCurrentSlide()) {
 			return {
 				x: clamp(point.x, 0, maxViewportX),
-				y: clamp(viewportY, 0, maxViewportY),
+				y: clamp(point.y, 0, maxViewportY),
 			}
 		}
 		return {
-			x: clamp(point.x + scrollLeft, 0, Math.max(0, docWidth - 1)),
-			y: clamp(point.y, 0, Math.max(0, docHeight - 1)),
+			x: clamp(point.x, 0, Math.max(0, docWidth - 1)),
+			y: clamp(point.y + scrollTop, 0, Math.max(0, docHeight - 1)),
 		}
 	}
 
@@ -766,7 +757,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 
 		if (formCandidate) {
 			rememberAdEffectFormCandidate(formCandidate, behaviorsId)
-			const formPerson = await getAdEffectPerson(behaviorsId)
+			const formPerson = await getAdEffectPerson(behaviorsId, countryCode)
 			const formSteps = formCandidate.formFields.map(field => field.step)
 			const adEffectStep = nowStep === '{step}' ? '' : nowStep
 			const currentStepIndex = formSteps.indexOf(adEffectStep)
@@ -855,14 +846,18 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	}
 }
 
+// ==============================
+// 7. 客户端调用说明
+// ==============================
+// jskey - 操作类型，必填项，值为以下之一：
+// checkpage - 检测可执行动作
 // agreement - 欧洲协议弹窗
-// click = 随机点击
 // clickad - 点击广告
 // search - 二次搜索
 // secondpage - 二级页面
 // associationsearch - 关联搜索
-// checkpage - 检测可执行动作
 // interstitial - 插屏广告
 // adeffect - 转化
+//
+// 注意：下面调用示例中的 {xxx} 是客户端替换占位符，必须原样保留。
 // allACtion('{jskey}', '{searchText}', '{step}', '{behaviorsId}','{countryCode}')
-allACtion('{jskey}', '{searchText}', '{step}', '{behaviorsId}')
