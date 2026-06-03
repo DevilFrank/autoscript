@@ -407,7 +407,6 @@ var normalizeAdEffectPerson = rawPerson => ({
 	temporaryMail: rawPerson.temporaryMail || '',
 })
 var fetchAdEffectPerson = async () => {
-	console.log('Fetching ad effect person data from:', ADS_FORM_DATA_URL)
 	const response = await fetch(ADS_FORM_DATA_URL)
 	const result = await response.json()
 	const list = result && Array.isArray(result.data) ? result.data : []
@@ -444,6 +443,8 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 
 	const viewportWidth = window.innerWidth || document.documentElement.clientWidth
 	const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+	const maxViewportX = Math.max(0, viewportWidth - 1)
+	const maxViewportY = Math.max(0, viewportHeight - 1)
 	const currentAction = ACTION_KEY[normalizeAction]
 	const currentSlide = currentAction ? currentAction.slide : ''
 	const currentPageFinish = currentAction ? currentAction.pageFinish : ''
@@ -544,24 +545,30 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	const getCandidatePoints = (element, rectOverride) => {
 		const rect = rectOverride || element.getBoundingClientRect()
 		if (!isElementInDocumentRange(rect)) return []
-		const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0
-		const createPoint = (x, viewportY) => ({
+		const { height: docHeight, scrollTop } = getDocumentBounds()
+		const createPoint = (x, y) => ({
 			x,
-			y: isCurrentSlide() ? viewportY + scrollTop : viewportY,
-			_viewportY: viewportY,
+			y,
+			_viewportY: isCurrentSlide() ? y - scrollTop : y,
 		})
 
-		const innerLeft = rect.left + rect.width * 0.1
-		const innerRight = rect.right - rect.width * 0.1
-		const innerTop = rect.top + rect.height * 0.1
-		const innerBottom = rect.bottom - rect.height * 0.1
-		const innerWidth = innerRight - innerLeft
-		const innerHeight = innerBottom - innerTop
+		const innerLeft = rect.left + rect.width * 0.2
+		const innerRight = rect.right - rect.width * 0.2
+		const innerViewportTop = rect.top + rect.height * 0.25
+		const innerViewportBottom = rect.bottom - rect.height * 0.25
+		const innerTop = isCurrentSlide() ? innerViewportTop + scrollTop : innerViewportTop
+		const innerBottom = isCurrentSlide() ? innerViewportBottom + scrollTop : innerViewportBottom
+		const pointLeft = clamp(innerLeft, 0, maxViewportX)
+		const pointRight = clamp(innerRight, 0, maxViewportX)
+		const pointTop = isCurrentSlide() ? clamp(innerTop, 0, Math.max(0, docHeight - 1)) : clamp(innerTop, 0, maxViewportY)
+		const pointBottom = isCurrentSlide() ? clamp(innerBottom, 0, Math.max(0, docHeight - 1)) : clamp(innerBottom, 0, maxViewportY)
+		const innerWidth = pointRight - pointLeft
+		const innerHeight = pointBottom - pointTop
 		if (innerWidth <= 0 || innerHeight <= 0) return []
 
 		const points = []
 		for (let i = 0; i < 13; i++) {
-			points.push(createPoint(innerLeft + Math.random() * innerWidth, innerTop + Math.random() * innerHeight))
+			points.push(createPoint(pointLeft + Math.random() * innerWidth, pointTop + Math.random() * innerHeight))
 		}
 		return points
 	}
@@ -571,20 +578,19 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 		if (points.length === 0) return null
 		const getPointViewportY = point => (point && point._viewportY !== undefined ? point._viewportY : point.y)
 		const isPointInViewport = point =>
-			point.x >= 0 && point.x <= viewportWidth && getPointViewportY(point) >= 0 && getPointViewportY(point) <= viewportHeight
-		let fallbackPoint = null
+			point.x >= 0 && point.x <= maxViewportX && getPointViewportY(point) >= 0 && getPointViewportY(point) <= maxViewportY
 
 		for (let i = 0; i < points.length; i++) {
 			const point = points[i]
 			if (!isPointInViewport(point)) {
-				if (!fallbackPoint) fallbackPoint = point
+				if (isCurrentSlide()) return point
 				continue
 			}
 			if (pointHitsElement(element, point.x, getPointViewportY(point))) {
 				return point
 			}
 		}
-		return fallbackPoint
+		return null
 	}
 
 	const getValidElementsWithPointBySelector = selector => {
@@ -635,10 +641,20 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 		inputElement.dispatchEvent(new Event('change', { bubbles: true }))
 	}
 
-	const toPageCoordinate = point => ({
-		x: point.x,
-		y: point.y,
-	})
+	const toPageCoordinate = point => {
+		const { width: docWidth, height: docHeight, scrollLeft } = getDocumentBounds()
+		const viewportY = point && point._viewportY !== undefined ? point._viewportY : point.y
+		if (!isCurrentSlide()) {
+			return {
+				x: clamp(point.x, 0, maxViewportX),
+				y: clamp(viewportY, 0, maxViewportY),
+			}
+		}
+		return {
+			x: clamp(point.x + scrollLeft, 0, Math.max(0, docWidth - 1)),
+			y: clamp(point.y, 0, Math.max(0, docHeight - 1)),
+		}
+	}
 
 	let reportKey = ''
 	let reportPosition = ''
