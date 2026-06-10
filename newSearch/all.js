@@ -62,7 +62,7 @@ var ADS_FORM_STEPS = [
 	'monthlySalary',
 	'employmentStatus',
 ]
-var ADS_FORM_DATA_BASE_URL = 'http://adcenter.airmobyte.com/prod-api/common/getFormDataInfo?countryCode='
+var ADS_FORM_DATA_BASE_URL = 'https://adcenter.airmobyte.com/prod-api/common/getFormDataInfo?countryCode='
 var ADS_FIELD_ALIASES = {
 	fullName: ['name', 'full name', 'fullname', 'first name', 'last name', 'your name', '姓名', 'nombre', 'contact name'],
 	age: ['age', 'years old', 'edad', '年龄'],
@@ -432,8 +432,15 @@ var getAdEffectPerson = async (behaviorsId, countryCode) => {
 async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = '', countryCode = 'US') {
 	const nowStep = step || '{step}'
 	let nextStep = ''
+	const ACTION_CONFIG = `{
+    "ADEFFECT": {
+      "pageFinish": false,
+      "slide": true
+    }
+  }`
 	const ACTIONSJSON = `{config}`
 	const ACTION_KEY = JSON.parse(ACTIONSJSON)
+	ACTION_KEY['ADEFFECT'] = JSON.parse(ACTION_CONFIG)['ADEFFECT']
 	const normalizeAction = String(jskey || '')
 		.trim()
 		.replace(/[\s_-]+/g, '')
@@ -551,8 +558,9 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 
 		const pointLeft = clamp(innerLeft, 0, maxViewportX)
 		const pointRight = clamp(innerRight, 0, maxViewportX)
-		const pointTop = clamp(innerTop, 0, maxViewportY)
-		const pointBottom = clamp(innerBottom, 0, maxViewportY)
+
+		const pointTop = isCurrentSlide() ? innerTop : clamp(innerTop, 0, maxViewportY)
+		const pointBottom = isCurrentSlide() ? innerBottom : clamp(innerBottom, 0, maxViewportY)
 		const innerWidth = pointRight - pointLeft
 		const innerHeight = pointBottom - pointTop
 		if (innerWidth <= 0 || innerHeight <= 0) return []
@@ -585,10 +593,69 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 		return null
 	}
 
+	const getElementSnapshot = element => {
+		const rect = element.getBoundingClientRect()
+		const style = window.getComputedStyle(element)
+		return {
+			tagName: element.tagName ? element.tagName.toLowerCase() : '',
+			id: element.id || '',
+			className: adsNormalizeSpace(element.className),
+			name: element.getAttribute('name') || '',
+			type: element.getAttribute('type') || '',
+			role: element.getAttribute('role') || '',
+			ariaLabel: element.getAttribute('aria-label') || '',
+			title: element.getAttribute('title') || '',
+			href: element.getAttribute('href') || '',
+			src: element.getAttribute('src') || '',
+			text: adsNormalizeSpace(element.textContent || element.value || '').slice(0, 200),
+			rect: {
+				left: rect.left,
+				top: rect.top,
+				right: rect.right,
+				bottom: rect.bottom,
+				width: rect.width,
+				height: rect.height,
+			},
+			style: {
+				display: style.display,
+				visibility: style.visibility,
+				opacity: style.opacity,
+				position: style.position,
+				pointerEvents: style.pointerEvents,
+			},
+			isConnected: element.isConnected,
+			disabled: Boolean(element.disabled),
+			visibleStyle: hasVisibleStyle(element),
+			documentRange: isElementInDocumentRange(rect),
+		}
+	}
+
+	const getValidElementSnapshot = item => {
+		const coordinate = toPageCoordinate(item.point)
+		return {
+			element: item.elementSnapshot || getElementSnapshot(item.element),
+			point: item.point,
+			coordinate,
+			position: `${coordinate.x},${coordinate.y}`,
+		}
+	}
+
 	const getValidElementsWithPointBySelector = selector => {
 		if (!selector) return []
 		const { baseSelector, pseudo } = parsePseudoSelector(selector)
 		const candidates = Array.from(document.querySelectorAll(baseSelector))
+		const candidatesSnapshot = candidates.map((element, index) => ({
+			index,
+			...getElementSnapshot(element),
+		}))
+		const trackData = {
+			selector,
+			baseSelector,
+			pseudo,
+			candidateCount: candidates.length,
+			candidates: candidatesSnapshot,
+		}
+		JSBehavior.dotrack('10', JSON.stringify(trackData))
 		if (pseudo) {
 			return candidates
 				.filter(el => el && document.body.contains(el) && hasVisibleStyle(el))
@@ -596,7 +663,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 					const pseudoRect = getPseudoElementRect(element, pseudo)
 					if (!pseudoRect) return null
 					const point = findClickablePoint(element, pseudoRect)
-					return point ? { element, point } : null
+					return point ? { element, point, elementSnapshot: getElementSnapshot(element) } : null
 				})
 				.filter(Boolean)
 		}
@@ -604,7 +671,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 			.filter(isElementClickable)
 			.map(element => {
 				const point = findClickablePoint(element)
-				return point ? { element, point } : null
+				return point ? { element, point, elementSnapshot: getElementSnapshot(element) } : null
 			})
 			.filter(Boolean)
 	}
@@ -634,7 +701,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	}
 
 	const toPageCoordinate = point => {
-		const { width: docWidth, height: docHeight, scrollTop } = getDocumentBounds()
+		const { height: docHeight, scrollTop } = getDocumentBounds()
 		if (!isCurrentSlide()) {
 			return {
 				x: clamp(point.x, 0, maxViewportX),
@@ -642,7 +709,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 			}
 		}
 		return {
-			x: clamp(point.x, 0, Math.max(0, docWidth - 1)),
+			x: clamp(point.x, 0, maxViewportX),
 			y: clamp(point.y + scrollTop, 0, Math.max(0, docHeight - 1)),
 		}
 	}
@@ -699,7 +766,6 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 	const reportAdEffectTrack = (recognition, trackType) => {
 		const trackInfo = getAdEffectTrackInfo(recognition)
 		if (!trackInfo || !trackInfo.type || !trackInfo.element) return
-		//屏幕分辨率
 		const screenWidth = window.screen.width || 0
 		const screenHeight = window.screen.height || 0
 		const data = JSON.stringify({
@@ -830,6 +896,20 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 				const randomData = randomItem(validElementsWithPoint)
 				const randomCoordinate = toPageCoordinate(randomData.point)
 				reportPosition = `${randomCoordinate.x},${randomCoordinate.y}`
+
+				const validElementsWithPointSnapshot = validElementsWithPoint.map((item, index) => ({
+					index,
+					...getValidElementSnapshot(item),
+				}))
+				const randomDataSnapshot = getValidElementSnapshot(randomData)
+				const trackData = {
+					normalizeAction,
+					selector,
+					validElementCount: validElementsWithPoint.length,
+					validElementsWithPoint: validElementsWithPointSnapshot,
+					randomElementWithPoint: randomDataSnapshot,
+				}
+				JSBehavior.dotrack('11', JSON.stringify(trackData))
 			}
 		}
 	}
