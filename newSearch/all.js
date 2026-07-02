@@ -29,6 +29,42 @@ var ADS_RECOGNITION_CONFIG = {
 	],
 	downloadKeywords: ['download', 'install', 'get app', 'get now', 'start download', 'free download', 'descargar', 'instalar'],
 	downloadHrefKeywords: ['.apk', '.exe', '.dmg', '.msi', '.zip', '.pkg', '.deb', '.pdf', 'download', 'install'],
+	conversionKeywords: [
+		'apply',
+		'claim',
+		'get started',
+		'get quote',
+		'request quote',
+		'check eligibility',
+		'sign up',
+		'register',
+		'see results',
+		'start',
+		'join now',
+		'continue now',
+		'book now',
+		'schedule',
+		'buy now',
+		'order now',
+		'enviar',
+		'continuar',
+		'siguiente',
+	],
+	conversionNegativeKeywords: [
+		'cookie',
+		'privacy',
+		'terms',
+		'login',
+		'log in',
+		'sign in',
+		'search',
+		'newsletter',
+		'subscribe',
+		'menu',
+		'close',
+		'accept',
+		'agree',
+	],
 	contactKeywords: [
 		'contact',
 		'contact us',
@@ -79,7 +115,20 @@ var ADS_FIELD_ALIASES = {
 	monthlySalary: ['salary', 'monthly salary', 'income', 'monthly income', 'earnings'],
 	employmentStatus: ['employment', 'employment status', 'work status'],
 }
-var ADS_REQUIRED_FORM_STEPS = ['fullName', 'age', 'telephone']
+var ADS_PRIMARY_FORM_STEPS = ['fullName', 'temporaryMail', 'telephone']
+var ADS_SUPPORTING_FORM_STEPS = [
+	'age',
+	'address',
+	'city',
+	'state',
+	'zipCode',
+	'birthday',
+	'gender',
+	'companyName',
+	'occupation',
+	'monthlySalary',
+	'employmentStatus',
+]
 var ADS_FALLBACK_PERSION = {
 	address: '2463  Robinson Lane',
 	birthday: '10/8/1993',
@@ -120,7 +169,7 @@ var adsNormalizeText = value =>
 		.toLowerCase()
 		.normalize('NFD')
 		.replace(/[\u0300-\u036f]/g, '')
-		.replace(/[^a-z0-9]+/g, ' ')
+		.replace(/[^a-z0-9\u4e00-\u9fff]+/g, ' ')
 		.trim()
 var adsQueryAll = (root, selector) => Array.from(root?.querySelectorAll?.(selector) || [])
 var adsIsVisible = element => {
@@ -134,6 +183,7 @@ var adsTextMatches = (text, keywords, exactScore, includeScore) => {
 	const normalizedText = adsNormalizeText(text)
 	return keywords.reduce((score, keyword) => {
 		const normalizedKeyword = adsNormalizeText(keyword)
+		if (!normalizedKeyword) return score
 		if (normalizedText === normalizedKeyword) return Math.max(score, exactScore)
 		return normalizedText.includes(normalizedKeyword) ? Math.max(score, includeScore) : score
 	}, 0)
@@ -145,6 +195,12 @@ var getAdsFieldLabel = element => {
 	const label = Array.from(element.ownerDocument.querySelectorAll('label')).find(item => item.htmlFor === element.id)
 	return label ? adsNormalizeSpace(label.textContent) : ''
 }
+var getAdsNearbyText = element =>
+	[element?.previousElementSibling?.textContent, element?.nextElementSibling?.textContent]
+		.map(adsNormalizeSpace)
+		.filter(Boolean)
+		.join(' | ')
+		.slice(0, 240)
 var summarizeAdsClickable = element => ({
 	tagName: element.tagName.toLowerCase(),
 	type: String(element.getAttribute('type') || '').toLowerCase(),
@@ -168,6 +224,7 @@ var getAdsFieldSummary = element => ({
 	ariaLabel: element.getAttribute('aria-label') || '',
 	autocomplete: element.getAttribute('autocomplete') || '',
 	labelText: getAdsFieldLabel(element),
+	nearbyText: getAdsNearbyText(element),
 	inputMode: element.getAttribute('inputmode') || '',
 	visible: adsIsVisible(element),
 	disabled: Boolean(element.disabled),
@@ -220,6 +277,7 @@ var getAdsFieldMatchScore = (summary, step) => {
 		summary.ariaLabel,
 		summary.autocomplete,
 		summary.labelText,
+		summary.nearbyText,
 		summary.className,
 	].join(' ')
 	let score = adsTextMatches(text, ADS_FIELD_ALIASES[step] || [], 18, 10)
@@ -245,13 +303,6 @@ var matchAdsFormFields = fieldEntries => {
 			matchedFields.push(best)
 		}
 	})
-	ADS_REQUIRED_FORM_STEPS.forEach((step, index) => {
-		if (matchedFields.some(field => field.step === step)) return
-		const fallbackIndex = fieldEntries.findIndex((entry, entryIndex) => !used.has(entryIndex) && entryIndex >= index)
-		if (fallbackIndex < 0) return
-		used.add(fallbackIndex)
-		matchedFields.push({ ...fieldEntries[fallbackIndex], step, entryIndex: fallbackIndex, score: 1 })
-	})
 	return matchedFields.sort((left, right) => left.entryIndex - right.entryIndex)
 }
 var getAdsFormFingerprint = (element, fieldEntries, submitButton) =>
@@ -266,29 +317,81 @@ var getAdsFormFingerprint = (element, fieldEntries, submitButton) =>
 			submitButton && [submitButton.summary.text, submitButton.summary.id, submitButton.summary.name].join(':'),
 		].join('|'),
 	)
-var scoreAdsCandidate = (summary, submitButton) => {
+var scoreAdsCandidate = (summary, formFields, submitButton) => {
+	const matchedSteps = formFields.map(field => field.step)
+	const primaryFieldCount = matchedSteps.filter(step => ADS_PRIMARY_FORM_STEPS.includes(step)).length
+	const supportingFieldCount = matchedSteps.filter(step => ADS_SUPPORTING_FORM_STEPS.includes(step)).length
+	const hasEnoughFieldSignal =
+		formFields.length >= 2 || primaryFieldCount >= 1 || (summary.visibleFieldCount === 1 && summary.hasPositiveKeyword)
+	if (!submitButton || !hasEnoughFieldSignal) {
+		return { total: -10, reasons: [{ label: 'missing-submit-or-field-signal', score: -10 }] }
+	}
+	if (summary.hasPasswordField || (summary.hasSearchLikeField && formFields.length <= 1)) {
+		return { total: -10, reasons: [{ label: 'unsafe-form-kind', score: -10 }] }
+	}
+	if (summary.hasNegativeKeyword && primaryFieldCount <= 1 && !summary.hasPositiveKeyword) {
+		return { total: -10, reasons: [{ label: 'negative-form-context', score: -10 }] }
+	}
+	const reasons = []
+	const addReason = (score, label) => {
+		if (score) reasons.push({ label, score })
+	}
 	let total = summary.tagName === 'form' ? 6 : 2
-	total += Math.min(summary.visibleFieldCount, 4) * 4
-	total += summary.requiredFieldCount > 0 ? 2 : 0
-	total += summary.visibleFieldCount >= 2 && summary.visibleFieldCount <= 6 ? 4 : 0
-	total += summary.hasPositiveKeyword ? 4 : 0
-	total += summary.hasSubmitKeyword ? 4 : 0
-	total += submitButton ? (submitButton.score >= 8 ? 6 : 3) : -8
-	total -= summary.visibleFieldCount > 10 ? Math.min((summary.visibleFieldCount - 10) * 2, 12) : 0
-	total -= summary.hasSearchLikeField ? 12 : 0
-	total -= summary.hasPasswordField ? 16 : 0
-	total -= summary.hasNegativeKeyword ? 10 : 0
-	return { total, reasons: [] }
+	addReason(summary.tagName === 'form' ? 6 : 2, 'container-type')
+	const matchedFieldScore = Math.min(formFields.length, 4) * 5
+	total += matchedFieldScore
+	addReason(matchedFieldScore, 'matched-fields')
+	const primaryFieldScore = Math.min(primaryFieldCount, 2) * 6
+	total += primaryFieldScore
+	addReason(primaryFieldScore, 'primary-fields')
+	const supportingFieldScore = Math.min(supportingFieldCount, 2) * 2
+	total += supportingFieldScore
+	addReason(supportingFieldScore, 'supporting-fields')
+	const requiredFieldScore = summary.requiredFieldCount > 0 ? 2 : 0
+	total += requiredFieldScore
+	addReason(requiredFieldScore, 'required-fields')
+	const balancedFieldScore = summary.visibleFieldCount >= 1 && summary.visibleFieldCount <= 6 ? 4 : 0
+	total += balancedFieldScore
+	addReason(balancedFieldScore, 'balanced-field-count')
+	const positiveKeywordScore = summary.hasPositiveKeyword ? 4 : 0
+	total += positiveKeywordScore
+	addReason(positiveKeywordScore, 'positive-keywords')
+	const submitCopyScore = summary.hasSubmitKeyword ? 4 : 0
+	total += submitCopyScore
+	addReason(submitCopyScore, 'submit-copy')
+	const submitButtonScore = submitButton.score >= 8 ? 6 : 3
+	total += submitButtonScore
+	addReason(submitButtonScore, 'submit-button')
+	const tooManyFieldsPenalty = summary.visibleFieldCount > 8 ? -Math.min((summary.visibleFieldCount - 8) * 2, 12) : 0
+	total += tooManyFieldsPenalty
+	addReason(tooManyFieldsPenalty, 'too-many-fields')
+	const tooManyButtonsPenalty = summary.visibleButtonCount > 6 ? -Math.min((summary.visibleButtonCount - 6) * 2, 8) : 0
+	total += tooManyButtonsPenalty
+	addReason(tooManyButtonsPenalty, 'too-many-buttons')
+	const searchLikePenalty = summary.hasSearchLikeField ? -12 : 0
+	total += searchLikePenalty
+	addReason(searchLikePenalty, 'search-like')
+	const passwordPenalty = summary.hasPasswordField ? -16 : 0
+	total += passwordPenalty
+	addReason(passwordPenalty, 'password-field')
+	const negativeKeywordPenalty = summary.hasNegativeKeyword ? -10 : 0
+	total += negativeKeywordPenalty
+	addReason(negativeKeywordPenalty, 'negative-keywords')
+	const weakFieldPenalty = primaryFieldCount === 0 && supportingFieldCount === 0 ? -8 : 0
+	total += weakFieldPenalty
+	addReason(weakFieldPenalty, 'weak-field-semantics')
+	return { total, reasons, matchedFieldCount: formFields.length, primaryFieldCount, supportingFieldCount }
 }
 var findAdsBestClickable = (root, config, scorer) => {
 	let bestTarget = null
 	for (const element of adsQueryAll(root, config.buttonSelector)) {
 		const summary = summarizeAdsClickable(element)
-		const score = summary.visible ? scorer(summary) : 0
+		const score = summary.visible ? scorer(summary, element) : 0
 		if (score > 0 && (!bestTarget || score > bestTarget.score)) bestTarget = { element, summary, score }
 	}
 	return bestTarget
 }
+var isAdsLowValueClickableArea = element => Boolean(element?.closest?.('nav, header, footer, [role="navigation"]'))
 var findAdsFallbackTargets = (root, config) => ({
 	downloadButton: findAdsBestClickable(root, config, summary => {
 		const textScore = adsTextMatches([summary.text, summary.ariaLabel, summary.title].join(' '), config.downloadKeywords, 12, 9)
@@ -311,6 +414,16 @@ var findAdsFallbackTargets = (root, config) => ({
 		const score = adsTextMatches([summary.text, summary.ariaLabel, summary.title, summary.href].join(' '), config.contactKeywords, 12, 8)
 		return score >= 8 ? score : 0
 	}),
+	conversionButton: findAdsBestClickable(root, config, (summary, element) => {
+		const textBlob = [summary.text, summary.ariaLabel, summary.title].join(' ')
+		const metaBlob = [summary.name, summary.id, summary.className, summary.href].join(' ')
+		const textScore = adsTextMatches(textBlob, config.conversionKeywords, 14, 10)
+		const metaScore = adsTextMatches(metaBlob, config.conversionKeywords, 8, 5)
+		const negativeScore = adsTextMatches([textBlob, metaBlob].join(' '), config.conversionNegativeKeywords, 14, 10)
+		let score = Math.max(textScore, metaScore) - negativeScore
+		if (isAdsLowValueClickableArea(element)) score -= 8
+		return score >= 10 ? score : 0
+	}),
 })
 
 function recognizeAdsLandingPage(options = {}) {
@@ -324,9 +437,8 @@ function recognizeAdsLandingPage(options = {}) {
 			const summary = summarizeAdsCandidate(element, fieldEntries, config)
 			const submitButton = findAdsSubmitButton(element, config)
 			const formFields = matchAdsFormFields(fieldEntries)
-			const hasAllFormFields = ADS_REQUIRED_FORM_STEPS.every(step => formFields.some(field => field.step === step))
-			if (!hasAllFormFields || !submitButton) return null
-			const scoreDetails = scoreAdsCandidate(summary, submitButton)
+			if (!submitButton) return null
+			const scoreDetails = scoreAdsCandidate(summary, formFields, submitButton)
 			return scoreDetails.total > 0
 				? {
 						element,
@@ -353,7 +465,9 @@ function recognizeAdsLandingPage(options = {}) {
 				? { type: 'phone-link', target: fallbackTargets.phoneLink }
 				: fallbackTargets.contactButton
 					? { type: 'contact-button', target: fallbackTargets.contactButton }
-					: null
+					: fallbackTargets.conversionButton
+						? { type: 'conversion-button', target: fallbackTargets.conversionButton }
+						: null
 	return {
 		candidates,
 		bestCandidate: candidates[0] || null,
@@ -436,11 +550,16 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
     "ADEFFECT": {
       "pageFinish": false,
       "slide": true
+    },
+    "INTERSTITIALCLOSE": {
+      "pageFinish": true,
+      "slide": false
     }
   }`
 	const ACTIONSJSON = `{config}`
 	const ACTION_KEY = JSON.parse(ACTIONSJSON)
 	ACTION_KEY['ADEFFECT'] = JSON.parse(ACTION_CONFIG)['ADEFFECT']
+	ACTION_KEY['INTERSTITIALCLOSE'] = JSON.parse(ACTION_CONFIG)['INTERSTITIALCLOSE']
 	const normalizeAction = String(jskey || '')
 		.trim()
 		.replace(/[\s_-]+/g, '')
@@ -724,7 +843,8 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 				(recognition.fallbackTargets &&
 					(recognition.fallbackTargets.downloadButton ||
 						recognition.fallbackTargets.phoneLink ||
-						recognition.fallbackTargets.contactButton))),
+						recognition.fallbackTargets.contactButton ||
+						recognition.fallbackTargets.conversionButton))),
 		)
 	const getAdEffectElementName = element =>
 		adsNormalizeSpace(
@@ -755,6 +875,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 				'download-button': '下载按钮',
 				'phone-link': '电话a标签',
 				'contact-button': '客服按钮',
+				'conversion-button': '转化按钮',
 			}
 			return {
 				type: typeMap[preferredTarget.type] || '',
@@ -888,6 +1009,15 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 				}
 			}
 		}
+	} else if (normalizeAction === 'INTERSTITIALCLOSE') {
+		const x = window.screen.width * 0.88 + Math.floor(Math.random() * window.screen.width * 0.1)
+		const y = window.screen.height * 0.01 + Math.floor(Math.random() * window.screen.height * 0.03)
+		reportPosition = `${x},${y}`
+		const trackData = {
+			normalizeAction,
+			reportPosition,
+		}
+		JSBehavior.dotrack('11', JSON.stringify(trackData))
 	} else {
 		const selector = currentAction && currentAction.selector
 		if (selector) {
@@ -937,6 +1067,7 @@ async function allACtion(jskey, searchText = 'iphone', step = '', behaviorsId = 
 // secondpage - 二级页面
 // associationsearch - 关联搜索
 // interstitial - 插屏广告
+// interstitialclose - 插屏广告关闭
 // adeffect - 转化
 //
 // 注意：下面调用示例中的 {xxx} 是客户端替换占位符，必须原样保留。
